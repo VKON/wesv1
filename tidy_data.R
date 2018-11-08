@@ -1,4 +1,4 @@
-setwd("~/Documents/AllThingsR/wesnoth")
+
 library(tidyverse)
 library(lubridate)
 library(rebus)
