@@ -57,6 +57,7 @@ load_wesnoth <- function(path = 'Wesv15.csv'){
                version_id = factor(version_id))
     
     data <- data %>% 
+        mutate(date = ymd_hm(date)) %>% 
         select(-c('year','mon','wday' )) %>% 
         left_join(player_lookup, by = 'player') %>% 
         select(-player) %>% 
@@ -88,17 +89,18 @@ load_wesnoth <- function(path = 'Wesv15.csv'){
                   map_id = first(map_id),
                   title = first(title),
                   game_file = first(game_file),
-                  num_players = max(number)) %>%
-        mutate(date = ymd_hm(date))
+                  num_players = max(number))
     
-    elos <- data %>% 
-            select(player_id = winner_id,
-                   elo = winner_elo,
-                   date) %>% 
-            union(data %>% 
-                      select(player_id = loser_id,
-                             elo = loser_elo,
-                             date))
+    winner_elos <-  data %>% select(player_id = winner_id,
+                           elo = winner_elo,
+                           date)
+    loser_elos <- data %>% 
+        select(player_id = loser_id,
+               elo = loser_elo,
+               date)
+    
+    elos <- winner_elos%>% 
+            bind_rows(loser_elos)
     
     two_player_game_ids <- game_info %>% 
         filter(num_players == 2) %>% 
