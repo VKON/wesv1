@@ -1,5 +1,6 @@
 setwd("~/Documents/AllThingsR/wesnoth")
 library(tidyverse)
+library(lubridate)
 library(rebus)
 
 
@@ -87,7 +88,8 @@ load_wesnoth <- function(path = 'Wesv15.csv'){
                   map_id = first(map_id),
                   title = first(title),
                   game_file = first(game_file),
-                  num_players = max(number))
+                  num_players = max(number)) %>%
+        mutate(date = ymd_hm(date))
     
     elos <- data %>% 
             select(player_id = winner_id,
