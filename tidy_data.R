@@ -14,67 +14,19 @@ load_wesnoth <- function(path = 'Wesv15.csv'){
                     mutate(player_id = row_number(),
                            player_id = factor(player_id))
     
-    era_lookup <- data %>% 
-                    select(era) %>% 
-                    unique() %>% 
-                    mutate(era_id = row_number(),
-                           era_id = factor(era_id)) 
-    
-    map_lookup <- data %>% 
-        select(map) %>% 
-        unique() %>% 
-        mutate(map_id = row_number(),
-               map_id = factor(map_id)) 
-    
-    color_lookup <- data %>% 
-        select(color) %>% 
-        unique() %>% 
-        mutate(color_id = row_number(),
-               color_id = factor(color_id)) 
-    
-    faction_lookup <- data %>% 
-        select(faction) %>% 
-        unique() %>% 
-        mutate(faction_id = row_number(),
-               faction_id = factor(faction_id))
-    
-    leader_lookup <- data %>% 
-        select(leader) %>% 
-        unique() %>% 
-        mutate(leader_id = row_number(),
-               leader_id = factor(leader_id))
-    
-    team_lookup <- data %>% 
-        select(team) %>% 
-        unique() %>% 
-        mutate(team_id = row_number(),
-               team_id = factor(team_id))
-    
-    version_lookup <- data %>% 
-        select(version) %>% 
-        unique() %>% 
-        mutate(version_id = row_number(),
-               version_id = factor(version_id))
     
     data <- data %>% 
         mutate(date = ymd_hm(date)) %>% 
         select(-c('year','mon','wday' )) %>% 
-        left_join(player_lookup, by = 'player') %>% 
+        mutate(color = factor(color),
+               map = factor(map),
+               era = factor(era),
+               faction = factor(faction),
+               leader = factor(leader),
+               team = factor(team),
+               version = factor(version)) %>% 
+        left_join(player_lookup, by = c('player')) %>% 
         select(-player) %>% 
-        left_join(color_lookup, by = 'color') %>% 
-        select(-color) %>% 
-        left_join(era_lookup, by = 'era') %>% 
-        select(-era) %>% 
-        left_join(map_lookup, by = 'map') %>% 
-        select(-map) %>% 
-        left_join(faction_lookup, by = 'faction') %>% 
-        select(-faction) %>% 
-        left_join(leader_lookup, by = 'leader') %>% 
-        select(-leader) %>% 
-        left_join(team_lookup, by = 'team') %>% 
-        select(-team) %>% 
-        left_join(version_lookup, by = 'version') %>% 
-        select(-version) %>% 
         left_join(player_lookup %>% 
             rename(winner_id = player_id), by = c('winner' = 'player')) %>% 
         select(-winner) %>% 
@@ -86,7 +38,7 @@ load_wesnoth <- function(path = 'Wesv15.csv'){
         group_by(game_id) %>% 
         summarise(turns = first(turns),
                   date = first(date),
-                  map_id = first(map_id),
+                  map = first(map),
                   title = first(title),
                   game_file = first(game_file),
                   num_players = max(number))
@@ -120,7 +72,7 @@ load_wesnoth <- function(path = 'Wesv15.csv'){
                                 'stats.taken_expected')
     
     player_game_statistics <- data %>% 
-        select(game_id, player_id, color_id, team_id,
+        select(game_id, player_id, color, team, faction, leader,
                cost = stats.cost,
                infliced_expected = stats.inflicted_expected,
                inflicted_actual = stats.inflicted_actual,
@@ -170,13 +122,6 @@ load_wesnoth <- function(path = 'Wesv15.csv'){
         select(-statistic)
     
     to_export <- list('player_lookup'= player_lookup,
-                      'era_lookup' = era_lookup,
-                      'map_lookup' = map_lookup, 
-                      'color_lookup' = color_lookup, 
-                      'faction_lookup'=faction_lookup, 
-                      'team_lookup' = team_lookup, 
-                      'leader_lookup' = leader_lookup, 
-                      'version_lookup' = version_lookup,
                       'units_lookup' = units_lookup,
                       'game_info' = game_info, 
                       'two_player_games' = two_player_games, 
@@ -188,3 +133,5 @@ load_wesnoth <- function(path = 'Wesv15.csv'){
                       'recruits_stats' = recruits_stats)
     list2env(to_export, envir = .GlobalEnv)
 }
+
+load_wesnoth()
