@@ -134,4 +134,3 @@ load_wesnoth <- function(path = 'Wesv15.csv'){
     list2env(to_export, envir = .GlobalEnv)
 }
 
-load_wesnoth()
