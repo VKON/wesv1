@@ -4,9 +4,10 @@ library(lubridate)
 library(rebus)
 
 
-load_wesnoth <- function(path = 'Wesv15.csv'){
+load_wesnoth <- function(path = 'Wesv15.csv', unit_data_path = '.'){
     
     data <- read_csv(path)
+    unit_data <- load_unit_data(unit_data_path)
 
     player_lookup <- data %>% 
                     select(player) %>% 
@@ -95,11 +96,8 @@ load_wesnoth <- function(path = 'Wesv15.csv'){
         select(-description)
     
     
-    units_lookup <- player_unit_statistics %>% 
-        select(unit) %>% 
-        unique() %>% 
-        mutate(unit_id = row_number(),
-               unit_id = factor(unit_id))
+    units_lookup <- unit_data$unit_basic %>% 
+        select(unit, unit_id) 
     
     player_unit_statistics <- player_unit_statistics %>% 
         left_join(units_lookup, by = c('unit')) %>% 
@@ -130,7 +128,17 @@ load_wesnoth <- function(path = 'Wesv15.csv'){
                       'advances_stats' = advances_stats, 
                       'deats_stats' = deaths_stats,
                       'kills_stats' = kills_stats, 
-                      'recruits_stats' = recruits_stats)
+                      'recruits_stats' = recruits_stats,
+                      'unit_data'= unit_data)
     list2env(to_export, envir = .GlobalEnv)
+}
+
+load_unit_data <- function(path = '.'){
+    unit_basic <- read_csv(paste(path,'/','unit_basic.csv', sep = ''))
+    unit_attack<- read_csv(paste(path,'/','unit_attack.csv', sep = ''))
+    unit_movement <- read_csv(paste(path,'/','unit_movement.csv', sep = ''))
+    unit_resistance <- read_csv(paste(path,'/','unit_resistance.csv', sep = ''))
+    return (list('unit_basic' = unit_basic, 'unit_attack' = unit_attack, 
+                'unit_movement'= unit_movement, 'unit_resistance' = unit_resistance))
 }
 
