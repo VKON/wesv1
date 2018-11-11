@@ -19,14 +19,31 @@ map_lookup %>%
     arrange(desc(num_games))
 
 # Generate statistics
-two_player_games %>% 
+faction_statistics <- two_player_games %>% 
     left_join(game_factions, 
               by =c('game_id' = 'game_id','first_player_id'='player_id') ) %>% 
     rename(first_faction = faction) %>% 
     left_join(game_factions, 
               by =c('game_id' = 'game_id','second_player_id'='player_id') ) %>% 
     rename(second_faction = faction) %>% 
-    # left_join(map_lookup, by = c('game_id')) %>% 
     group_by( first_faction, second_faction) %>% 
     summarise(wins = sum(first_player_wins),
-              total_games = n())
+              total_games = n()) %>% 
+    mutate(win_ratio = wins/total_games,
+           dist_to_fair = win_ratio - 0.5,
+    # Variance of Bernoulli = N*p*(1-p), for fair coin sigma = sqrt(N)
+           adjust_dist_to_fair = 2*(wins - 0.5*total_games)/sqrt(total_games))
+
+faction_plot <- faction_statistics %>% 
+    ggplot(aes(y = first_faction, x = second_faction, fill = adjust_dist_to_fair))+
+        geom_tile() +
+        scale_fill_gradient2('Adj. Win Ratio',high = 'red', low = 'blue', mid = 'white')+
+        ggtitle('Certain Factions overpower others', 
+                subtitle = 'Note the asymmetry across the diagonal')+
+        coord_equal()+
+        labs(x = '', y='')+
+        theme_bw()+
+        theme(text = element_text(family = 'Futura Std Medium'), 
+              plot.subtitle = element_text(size = 8),
+              axis.text.x = element_text(angle = 90),
+              panel.border = element_blank(), panel.grid= element_blank())
