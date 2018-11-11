@@ -4,7 +4,7 @@ library(lubridate)
 library(rebus)
 
 
-load_wesnoth <- function(path = 'Wesv15.csv', unit_data_path = '.'){
+load_wesnoth <- function(path = 'data/Wesv15.csv', unit_data_path = './data'){
     
     data <- read_csv(path)
     unit_data <- load_unit_data(unit_data_path)
@@ -133,7 +133,7 @@ load_wesnoth <- function(path = 'Wesv15.csv', unit_data_path = '.'){
     list2env(to_export, envir = .GlobalEnv)
 }
 
-load_unit_data <- function(path = '.'){
+load_unit_data <- function(path = './data'){
     unit_basic <- read_csv(paste(path,'/','unit_basic.csv', sep = ''))
     unit_attack<- read_csv(paste(path,'/','unit_attack.csv', sep = ''))
     unit_movement <- read_csv(paste(path,'/','unit_movement.csv', sep = ''))
@@ -142,3 +142,4 @@ load_unit_data <- function(path = '.'){
                 'unit_movement'= unit_movement, 'unit_resistance' = unit_resistance))
 }
 
+load_unit_data()
