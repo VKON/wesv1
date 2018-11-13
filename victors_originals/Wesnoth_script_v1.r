@@ -33,11 +33,11 @@ getwd()
 
 # in/decrease print size
 # options(max.print=1000000)
-options(max.print=200)
+options(max.print=200) # When you use tibbles instead of DataFrames, you won't have to worry about these
 
 
 # move into big data location (4GB), load files, append-read files into one data frame, save results as data frame
-source("Wes_read_big_df_v1.r")
+source("./victors_originals/Wes_read_big_df_v1.r")
 
 
 # move into metadata location (winloss)

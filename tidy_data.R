@@ -126,7 +126,7 @@ load_wesnoth <- function(path = 'data/Wesv15.csv', unit_data_path = './data'){
                       'player_game_statistics' = player_game_statistics, 
                       'elos' = elos, 
                       'advances_stats' = advances_stats, 
-                      'deats_stats' = deaths_stats,
+                      'deaths_stats' = deaths_stats,
                       'kills_stats' = kills_stats, 
                       'recruits_stats' = recruits_stats,
                       'unit_data'= unit_data)
@@ -141,5 +141,3 @@ load_unit_data <- function(path = './data'){
     return (list('unit_basic' = unit_basic, 'unit_attack' = unit_attack, 
                 'unit_movement'= unit_movement, 'unit_resistance' = unit_resistance))
 }
-
-load_unit_data()

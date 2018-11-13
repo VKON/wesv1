@@ -20,7 +20,7 @@ library('jsonlite')
 library('plyr')
 library('purrr')
 
-
+# No need to use the namespace identifiers here
 singlegame_json2df <- function(json) {
 	# read json and expand by flatten
 	jsonlite::fromJSON(json, flatten = TRUE) %>%
@@ -42,7 +42,7 @@ singlegame_json2df <- function(json) {
 # execute function on all json files is expensive (4GB), do only once
 # Wes1 <- list.files() %>% purrr::map_df(singlegame_json2df, .id = "game_id")
 # write.table(Wes1, file = 'Wesv7.csv', append = TRUE, sep = ',', col.names = TRUE, row.names = FALSE) # 
-
+# Using map_df from purr is good because it is clean and efficient
 
 # restart R session
 setwd("C:/Users/VK/Desktop/VKOR/wes")

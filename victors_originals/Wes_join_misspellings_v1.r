@@ -8,6 +8,8 @@ library('dplyr')
 # library(stringr)
 
 # test approach on subset 
+# I don't think you have to namespace dplyr.  think sample_n is dplyr specific
+# Even if not, when you load dplyr it would get overwritten
 # sub_w1 <- sub_Wes1 %>% dplyr::sample_n(100)
 # sub_e1 <- Elo1 %>% dplyr::sample_n(100)
 
@@ -15,9 +17,10 @@ sub_w1 <- sub_Wes1
 sub_e1 <- Elo1 
 
 # easy merge of both databases using game_file as foreign key
-Join1 <- left_join(sub_w1, sub_e1, by = "game_file")
+Join1 <- left_join(sub_w1, sub_e1, by = "game_file") 
 
 # winner matches
+# This is probably easier/cleaner with dplyr and tibbles (mutate(... = as.character(...)) %>% select())
 Join_win <- as.data.frame(cbind(as.character(Join1$player), as.character(Join1$winner)))
 # loser matches
 Join_los <- as.data.frame(cbind(as.character(Join1$player), as.character(Join1$loser)))
@@ -31,6 +34,7 @@ library('stringdist')
 # http://dni-institute.in/blogs/r-fuzzy-string-match/
 
 method_list <- c("osa", "lv", "dl", "hamming", "lcs", "qgram", "cosine", "jaccard", "jw", "soundex")
+# That is good!
 for( i in method_list){
  
  Join_win[,i] <- stringdist(Join_win$V1,Join_win$V2,method=i) 

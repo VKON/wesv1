@@ -19,6 +19,7 @@ options(max.print=600)
 # View(Sort1)
 
 # add year, month, weekday information
+# lubridate package is a little easier here
 Sort1$year <- strptime(Sort1$date, format = '%Y.%m.%d %H:%M')$year + 1900
 Sort1$mon <- strptime(Sort1$date, format = '%Y.%m.%d %H:%M')$mon 
 Sort1$wday <- strptime(Sort1$date, format = '%Y.%m.%d %H:%M')$wday 
@@ -29,6 +30,7 @@ Sort1$mon <- factor(Sort1$mon)
 Sort1$wday <- factor(Sort1$wday)
 
 # order of factors, start with sunday and Jan
+# These lists are stored in R as well, I believe part of Lubridate
 levels(Sort1$wday) <- c('Sun','Mon','Tue','Wed','Thu','Fri','Sat')
 levels(Sort1$mon) <- c('Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec')
 View(Sort1)
@@ -43,6 +45,7 @@ View(Sort1)
 # write.table(Sort1, file = 'Wesv15.csv', append = TRUE, sep = ',', col.names = TRUE, row.names = FALSE, na = '') # 
 
 # Print all unique variable factors as text file
+# How did you enforce uniqueness? I would use the unique() function here
 alluniques <- sapply(Sort1, levels)
 sink("alluniques.txt")
 print(alluniques)
