@@ -1,0 +1,157 @@
+---
+title: "Faction Modelling for the Wesnoth game"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+Load libraries and data
+
+```{r, message=F, warning=F}
+library(caret)
+library(glmnet)
+library(ROCR)
+library(broom)
+source('tidy_data.R')
+load_wesnoth()
+```
+
+At first the faction and leader combinations are created. It makes sense to separate the combinations of factions to factions and leaders to leaders to find out which of the two effects, factions or leaders, is dominant.
+
+```{r}
+# Select for each game-player combination the faction and leader
+game_factions <- player_game_statistics %>% 
+    select(game_id, player_id, faction, leader)
+```
+
+```{r}
+faction_cleaned <-  two_player_games %>% 
+    left_join(game_factions, 
+              by =c('game_id' = 'game_id','first_player_id'='player_id') ) %>% 
+    rename(fp_faction = faction, fp_leader = leader ) %>% 
+    left_join(game_factions, 
+              by =c('game_id' = 'game_id','second_player_id'='player_id') ) %>% 
+    rename(sp_faction = faction, sp_leader = leader) %>% 
+    mutate(fp_faction_leader = str_c(fp_faction, '-', fp_leader),
+           sp_faction_leader = str_c(sp_faction,'-',sp_leader)) %>% 
+    # Order the factors alphabetically, this way more data per faction is obtained  
+    mutate(factor_relation = fp_faction_leader <= sp_faction_leader) %>% 
+    mutate(final_factor = if_else(factor_relation, 
+                                  str_c(fp_faction_leader,' vs. ', sp_faction_leader),
+                                  str_c(sp_faction_leader,' vs. ', fp_faction_leader)),
+           final_factor = factor(final_factor),
+           faction_win = if_else(factor_relation,
+                                 first_player_wins,
+                                 1-first_player_wins)) %>% 
+    # Select only those combinations that are well defined
+    filter(!is.na(faction_win)) %>% 
+    select(final_factor, faction_win)
+```
+
+There are in total `r faction_cleaned %>% select(final_factor) %>% unique() %>% count()` factions.
+The relative importance of each faction can be estimated by calculating how many standard deviations the number of wins differ from a fair coin toss. If $M$ is the total number of heads out of $N$ coin tosses and $p$ is the probability for the coin to come up heads, then, assuming the coins are tossed independently from each other, the expectation value and variance are given by
+
+$$ <M> = p N $$
+and
+
+$$ Var(M) = <M^2> - <M>^2 = p(1-p)  N = \sigma_M^2 .$$
+For a coin the probability is $p = 0.5$, the $z$ variable is thus
+
+$$ z = \frac{M - <M>}{\sigma_M} = \frac{2M-N}{\sqrt{N}} .$$
+
+```{r}
+faction_cleaned %>% 
+      group_by(final_factor) %>% 
+      summarise(wins = sum(faction_win),
+                num_played = n()) %>% 
+      mutate(adj_dev = (2*wins - num_played)/sqrt(num_played)) %>% 
+      arrange(desc(abs(adj_dev))) %>% 
+      select(final_factor, adj_dev) %>% 
+      head(10)
+```
+These values indicate that the faction combinations do differ from a fair coin.
+This seems to already favor the faction combinations somewhat over the leader combinations.
+
+One concretise this idea by using a logistic regression with *L1* regularisation. This form of regularisation tends to lead to sparse parameter distributions in the fitted model.  
+First the categorical feature can be one-hot encoded, so individual features can later be picked out by the regularisation.
+```{r}
+# Define (train) a one-hot encoder on the existing factors
+one_hot_encoder <- faction_cleaned %>% 
+  select(final_factor) %>% 
+  dummyVars(formula = '~.')
+
+# Apply the encoder to the data frame - This creates the input features
+x <- faction_cleaned %>% 
+  select(final_factor) %>% 
+  predict(one_hot_encoder, newdata = .) %>% 
+  # The glmnet works with matrices as input instead
+  as.matrix()
+```
+
+The target variable needs to be extracted as a vector
+```{r}
+y <- faction_cleaned %>% 
+  select(faction_win) %>% 
+  pull() %>% 
+  as.double()
+```
+
+The variables can be learned on the whole data set with the `glmnet` function. By setting `alpha=1`, we specify that pure *L1* regression is to be used. The `family='binomial'` sets the regression to be logistic.
+```{r}
+fit <-  glmnet(x = x, y = y, family = 'binomial', alpha = 1)
+```
+The coefficients for different regularisation strengths can be plotted directly
+```{r}
+plot(fit)
+```
+
+
+It looks as though there are roughly three large groups of parameters, one which tends to have large positive coefficients of similar size, one that tends to have larger negative coefficents of also similar size, and the main bulk of values in between. If the two groups with the similar coefficients belong to similar faction combinations or leader combinations, we could see these as leader factors, whereas the splitting of those lines would be lower order perturbations to the effect. 
+
+The different coefficients for the different regression strengths $\lambda$ can be extracted. 
+
+```{r}
+extract_glmnet_coefs <- function(fit, s) {
+  fit_results <- coef(fit, s = s) 
+  non_zero_indices <- which(fit_results !=0)
+  df <- tibble(
+          feature=rownames(fit_results)[non_zero_indices],
+          coefficient=fit_results[non_zero_indices] )%>% 
+        mutate(lambda = s,
+               feature = str_replace(feature,'final_factor.','')) %>% 
+        filter(coefficient != 0) %>% 
+        mutate(sign_coef = if_else(coefficient > 0, 1, -1))
+  return(df)
+}
+```
+For large `s`, i.e. strong regularisation, only the intercept, which is unaffected by regularisation, is retained.
+```{r}
+extract_glmnet_coefs(fit, 0.1)
+```
+A little experimentation shows that at `s` $\approx 0.015 $ the first non-zero coefficients that differ from the intercept appeat.
+```{r}
+s <- seq(0.008,0.016,by = 0.00001)
+coefficient_list <- map(s,~extract_glmnet_coefs(fit, .x))
+coefficient_tbl <-  bind_rows(coefficient_list)
+```
+```{r}
+coefficient_tbl %>% 
+  group_by(lambda) %>% 
+  summarise(num_nzc = n()) %>% 
+  ggplot(aes(x = lambda, y= num_nzc)) +
+    geom_line()
+```
+We can now inspect the leading coefficients
+```{r}
+extract_glmnet_coefs(fit, 0.015) %>% select(feature, sign_coef)
+```
+```{r}
+extract_glmnet_coefs(fit, 0.013) %>% select(feature, sign_coef)
+```
+```{r}
+extract_glmnet_coefs(fit, 0.011) %>% select(feature, sign_coef)
+```
+```{r}
+extract_glmnet_coefs(fit, 0.01) %>% select(feature, sign_coef)%>% arrange(feature)
+```
+The blocks are clearly separated by their faction combinations rather than their leader combinations. It is thus prefereable to control the influence of the leader-leader combination by the stronger faction-faction effect. Due to the asymmetric nature of the game, this modelling has to be done in two steps. We will use the regression coefficients of the features for the optimal lambda itself as features in the next step. We will however have to adjust for the directionality of the factors.

@@ -50,11 +50,11 @@ new_variables <- faction_cleaned %>% select(final_factor) %>% predict(one_hot_en
 new_variables <- as.matrix(new_variables)
 y <- faction_cleaned %>% select(faction_win) %>% pull() %>% as.double()
 
-l1_model <- glmnet(x = new_variables, y = y, family="binomial",alpha=1)
+# l1_model <- glmnet(x = new_variables, y = y, family="binomial",alpha=1)
 cvfit <-  cv.glmnet(x = new_variables, y = y, family = 'binomial', alpha = 1)
 lambda_min <- cvfit$lambda.min
 
-# Prediction for different lambda parameter
+# Extraction of different lambda parameter
 extract_glmnet_coefs <- function(cvfit, s="lambda.min") {
   ind <- which(coef(cvfit, s=s) != 0)
   df <- tibble(
@@ -65,4 +65,31 @@ extract_glmnet_coefs <- function(cvfit, s="lambda.min") {
   return(df)
 }
 
-extract_glmnet_coefs(cvfit, 0.001)
+# Create a sequence of powers of 10 to pass later as lambda parameters
+pow <- function(a,b){
+  a^b
+}
+powers <- seq(-10, 1,by = 1)
+s <- map_dbl(s,~pow(a=10, .x))
+
+extracted_list <- map(s,~extract_glmnet_coefs(cvfit, .x))
+top_extracts <-  bind_rows(extracted_list)
+
+top_extracts %>% 
+  group_by(lambda) %>% 
+  summarise(non_zero_params = n()) %>% 
+  arrange(desc(lambda))
+
+# Looks like the action is between s = 0.1 and s = 0.001
+s <- seq(0.001,0.02,by = 0.001)
+
+extracted_list <- map(s,~extract_glmnet_coefs(cvfit, .x))
+top_extracts <-  bind_rows(extracted_list)
+
+top_extracts %>% 
+  group_by(lambda) %>% 
+  summarise(non_zero_params = n()) %>% 
+  arrange(desc(lambda)) %>% 
+  head(30)
+
+# Interesting values : s = 0.015, 0.016, 0.011, 0.01
