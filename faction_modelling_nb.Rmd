@@ -11,10 +11,16 @@ Load libraries and data
 library(caret)
 library(glmnet)
 library(ROCR)
+library(rebus)
 library(broom)
 source('tidy_data.R')
-load_wesnoth()
 ```
+
+```{r, message=FALSE, warning=FALSE}
+load_wesnoth()
+set.seed(123)
+```
+
 
 At first the faction and leader combinations are created. It makes sense to separate the combinations of factions to factions and leaders to leaders to find out which of the two effects, factions or leaders, is dominant.
 
@@ -25,13 +31,17 @@ game_factions <- player_game_statistics %>%
 ```
 
 ```{r}
-faction_cleaned <-  two_player_games %>% 
+aug_games <-  two_player_games %>% 
     left_join(game_factions, 
               by =c('game_id' = 'game_id','first_player_id'='player_id') ) %>% 
     rename(fp_faction = faction, fp_leader = leader ) %>% 
     left_join(game_factions, 
               by =c('game_id' = 'game_id','second_player_id'='player_id') ) %>% 
     rename(sp_faction = faction, sp_leader = leader) %>% 
+    # Select only those combinations that are well defined
+    filter(!is.na(first_player_wins))
+
+faction_cleaned <- aug_games  %>% 
     mutate(fp_faction_leader = str_c(fp_faction, '-', fp_leader),
            sp_faction_leader = str_c(sp_faction,'-',sp_leader)) %>% 
     # Order the factors alphabetically, this way more data per faction is obtained  
@@ -43,8 +53,6 @@ faction_cleaned <-  two_player_games %>%
            faction_win = if_else(factor_relation,
                                  first_player_wins,
                                  1-first_player_wins)) %>% 
-    # Select only those combinations that are well defined
-    filter(!is.na(faction_win)) %>% 
     select(final_factor, faction_win)
 ```
 
@@ -111,6 +119,9 @@ It looks as though there are roughly three large groups of parameters, one which
 The different coefficients for the different regression strengths $\lambda$ can be extracted. 
 
 ```{r}
+feature_pattern <- START %R% one_or_more(WRD) %R% '.' %R% 
+                    capture(one_or_more(or(WRD, PUNCT, ANY_CHAR) )) %R% END
+
 extract_glmnet_coefs <- function(fit, s) {
   fit_results <- coef(fit, s = s) 
   non_zero_indices <- which(fit_results !=0)
@@ -118,7 +129,7 @@ extract_glmnet_coefs <- function(fit, s) {
           feature=rownames(fit_results)[non_zero_indices],
           coefficient=fit_results[non_zero_indices] )%>% 
         mutate(lambda = s,
-               feature = str_replace(feature,'final_factor.','')) %>% 
+               feature = str_match(feature, feature_pattern)[,2]) %>% 
         filter(coefficient != 0) %>% 
         mutate(sign_coef = if_else(coefficient > 0, 1, -1))
   return(df)
@@ -154,4 +165,232 @@ extract_glmnet_coefs(fit, 0.011) %>% select(feature, sign_coef)
 ```{r}
 extract_glmnet_coefs(fit, 0.01) %>% select(feature, sign_coef)%>% arrange(feature)
 ```
-The blocks are clearly separated by their faction combinations rather than their leader combinations. It is thus prefereable to control the influence of the leader-leader combination by the stronger faction-faction effect. Due to the asymmetric nature of the game, this modelling has to be done in two steps. We will use the regression coefficients of the features for the optimal lambda itself as features in the next step. We will however have to adjust for the directionality of the factors.
+The blocks are clearly separated by their faction combinations rather than their leader combinations. It is thus prefereable to control the influence of the leader-leader combination by the stronger faction-faction effect. Due to the asymmetric nature of the game, this modelling has to be done in two steps. We will use the regression coefficients of the features for the optimal lambda itself as features in the next step. We will however have to adjust for the directionality of the factors. This time, the fitting is not meant to be sparsity introducing, but rather should be as descriptive as possible. Hence it makes sense to use *L2* regularisation, i.e. set `alpha = 0`. The faction data needs to be reprepared
+
+```{r}
+faction_data <- aug_games %>% 
+  mutate(faction_reorder = as.character(fp_faction) > as.character(sp_faction),
+         faction_factor = if_else(faction_reorder,
+                                 str_c(sp_faction, fp_faction),
+                                 str_c(fp_faction, sp_faction)),
+         final_factor = factor(faction_factor),
+         faction_wins = if_else(faction_reorder, 1-first_player_wins, first_player_wins)) %>% 
+  select(final_factor, faction_wins)
+```
+
+Again, the features need to be one-hot encoded and the target extracted.
+
+```{r}
+oh_encoder <- faction_data %>% 
+            select(final_factor) %>% 
+            dummyVars(formula = '~.')
+
+x <- faction_data %>% 
+      select(final_factor) %>% 
+      predict(oh_encoder, newdata = .) %>% 
+      as.matrix()
+
+y <- faction_data %>% 
+      select(faction_wins) %>% 
+      pull() %>% 
+      as.double()
+```
+
+Now the `glmnet` model can be trained, prefereably with cross-validation for tuning the hyper-parameters.
+
+```{r}
+faction_fit <- cv.glmnet(x = x, y = y, family = 'binomial', alpha = 0)
+```
+
+We can use that to extract the tuned faction coefficients.
+
+```{r}
+faction_coefs <- faction_fit %>% 
+                  extract_glmnet_coefs(s = 'lambda.min') %>% 
+                  filter(!is.na(feature)) %>% 
+                  select(feature, coefficient)
+
+faction_coefs %>% write_csv('faction_coefs.csv')
+```
+
+This new lookup table can be used to create a new feature on any data frame that has the columns `fp_faction`, `sp_faction` and `first_player_wins`.
+
+```{r}
+add_faction_feature <- function(df, coef_lookup = faction_coefs){
+  df %>% 
+    mutate(faction_reorder = as.character(fp_faction) > as.character(sp_faction),
+         faction_factor = if_else(faction_reorder,
+                                 str_c(sp_faction, fp_faction),
+                                 str_c(fp_faction, sp_faction))) %>% 
+    left_join(coef_lookup, by = c('faction_factor' = 'feature')) %>% 
+    mutate(faction_feature = if_else(faction_reorder, -coefficient, coefficient)) %>% 
+    select(-faction_reorder, -faction_factor, -coefficient) %>% 
+    # Should no matchup happen, we add a neutral faction coefficient
+    # This is useful is new faction combinations appear
+    mutate(faction_feature = if_else(is.na(faction_feature), 0, faction_feature))
+}
+```
+
+This can be directly applied to the `aug_games` tables
+```{r}
+aug_games <- aug_games %>% add_faction_feature()
+```
+
+In the next step we prepare a training set. The leader combinations will still have to be ordered, so the winrate and the faction feature have to be adjusted accordingly.
+
+```{r}
+leader_cleaned <- aug_games %>% 
+  mutate(leader_reorder = as.character(fp_leader) >= as.character(sp_leader),
+         leader_factor = if_else(leader_reorder, 
+                                 str_c(sp_leader,fp_leader),
+                                 str_c(fp_leader, sp_leader)),
+         leader_factor = factor(leader_factor),
+         faction_feature = if_else(leader_reorder,-faction_feature, faction_feature),
+         first_player_wins = if_else(leader_reorder,
+                                     1-first_player_wins, first_player_wins)) %>% 
+         select(faction_feature, leader_factor, first_player_wins)
+```
+
+As before, the factors are one-hot encoded and then appended with the `faction_feature`.
+
+```{r}
+oh_encoder <- leader_cleaned %>% select(leader_factor) %>% dummyVars(formula = '~.')
+```
+
+```{r}
+x <- leader_cleaned %>% 
+  select(leader_factor) %>% 
+  predict(oh_encoder, newdata = .) %>% 
+  as.tibble() %>% 
+  mutate(faction_feature <- leader_cleaned$faction_feature) %>% 
+  as.matrix()
+y <- leader_cleaned %>% select(first_player_wins) %>% pull() %>% as.double()
+```
+
+Now the cross-validation can be run again.
+
+```{r}
+leader_fit <- cv.glmnet(x=x, y=y, family = 'binomial', alpha = 0)
+```
+
+and the fitted coefficients extracted.
+
+```{r}
+leader_coefs <- extract_glmnet_coefs(leader_fit, s ='lambda.min') %>% 
+  filter(!is.na(feature)) %>% 
+  select(feature, coefficient)
+leader_coefs %>% write_csv('leader_coefs.csv')
+```
+
+To generate this feature, a new function is written
+
+
+```{r}
+add_leader_feature <- function(df, coef_lookup = leader_coefs){
+  df %>% 
+    mutate(leader_reorder = as.character(fp_leader) > as.character(sp_leader),
+         leader_factor = if_else(leader_reorder,
+                                 str_c(sp_leader, fp_leader),
+                                 str_c(fp_leader, sp_leader))) %>% 
+    left_join(coef_lookup, by = c('leader_factor' = 'feature')) %>% 
+    mutate(leader_feature = if_else(leader_reorder, -coefficient, coefficient)) %>% 
+    select(-leader_reorder, -leader_factor, -coefficient) %>% 
+    mutate(leader_feature = if_else(is.na(leader_feature), 0, leader_feature))
+}
+```
+
+The new variable can be added to the original frame
+```{r}
+aug_games <- aug_games %>% add_leader_feature()
+```
+
+A third feature is the difference between the first and second player elos. The addition of this feature can also be coded as a function.
+```{r}
+add_elo_diff <- function(df){
+  aug_games %>% 
+    left_join(game_info %>% select(game_id, date), by = c('game_id')) %>% 
+    left_join(elos, by = c('first_player_id'='player_id', 'date'='date')) %>% 
+    rename('fp_elo' = 'elo') %>% 
+    left_join(elos, by = c('second_player_id'='player_id', 'date'='date')) %>% 
+    rename('sp_elo' = 'elo') %>% 
+    mutate(elo_diff = fp_elo - sp_elo) %>% 
+    select(-fp_elo, -sp_elo, -date)}
+```
+```{r}
+aug_games <- aug_games %>% add_elo_diff()
+```
+
+We can now test whether these features are predictive. To do this, it is sensible to split our data into train and test set. There are also some `NA`s produced due to incomplete matchup. This can be removed.
+
+
+```{r}
+aug_games <- aug_games %>% filter(complete.cases(.))
+train_idx <- createDataPartition(aug_games$game_id, p = 0.9, list = F)
+train_df <- aug_games[train_idx,]
+test_df <- aug_games[-train_idx,]
+```
+
+Let us train a simple model on the `elo_diff` only.
+
+```{r}
+model_elo <- glm(first_player_wins ~ elo_diff, data = train_df, family = 'binomial')
+```
+```{r}
+summary(model_elo)
+```
+
+This looks promising. We can make a prediction on the test set and see what the AUC is.
+```{r}
+model_elo_pred <- predict(model_elo, newdata = test_df, type = 'response')
+auc(test_df$first_player_wins, model_elo_pred)
+```
+
+
+Clearly the elo is discriminative. We can add the faction in making a prediction.
+
+
+```{r}
+model_elo_faction <- glm(first_player_wins ~ elo_diff + faction_feature, 
+                         data = train_df, family = 'binomial')
+```
+```{r}
+summary(model_elo_faction)
+```
+The AIC has improved.
+
+
+```{r}
+model_elo_faction_pred <- predict(model_elo_faction, newdata = test_df, type = 'response')
+auc(test_df$first_player_wins, model_elo_faction_pred)
+```
+
+The ROC value have improved as well!  
+Lastly we can add the leader feature.
+
+
+```{r}
+model_elo_faction_leader <- glm(first_player_wins ~ elo_diff + faction_feature + leader_feature, 
+                         data = train_df, family = 'binomial')
+```
+```{r}
+summary(model_elo_faction_leader)
+```
+
+```{r}
+model_elo_faction_leader_pred <- predict(model_elo_faction_leader, newdata = test_df, type = 'response')
+auc(test_df$first_player_wins, model_elo_faction_leader_pred)
+```
+
+Both AIC and ROC have improved.
+
+Things that can be done further:
+
+- Rather than using the fitted coefficients, it might be worthwhile to merely use the statistical deviations. The leader deviation could then simply be the deviation with respect to the empirical probability of the faction 
+
+$$ p_{\mathrm{emp}} = \frac{N_{\mathrm{wins}} + 1}{N_{\mathrm{games}}+2} $$
+
+This seems reasonable, as there are some leader-leader coefficients that are quite large for the same leader types. This empirical encoding should give better results. Currently the model encoding happens on data  on which the final test is done. This means there is an element of data creep that can be avoided by calculating the features on an earlier train-test split.
+
+- Use more model fine-tuning and more sophisticated models in the last step.
+- Optimise for log-loss. It is arguably more valuable to be uncertain about predictions and more often wrong then only rarely wrong but with confidence.
+
