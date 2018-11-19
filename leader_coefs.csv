@@ -1,0 +1,690 @@
+feature,coefficient
+Ancient WoseBanebow,-0.7157344517575752
+Bone ShooterBone Shooter,-0.18054058736198736
+Bone ShooterDark Sorcerer,0.013563187422246693
+Bone ShooterDeathblade,-0.1404076753535874
+Bone ShooterDrake Arbiter,-3.941383787913637e-4
+Bone ShooterDrake Flare,0.07844691017681679
+Bone ShooterDrake Gladiator,0.29638377700042823
+Bone ShooterDrake Slasher,0.0983100226020647
+Bone ShooterDrake Thrasher,0.15338031019012213
+Bone ShooterDrake Warrior,-0.11573865733772308
+Bone ShooterDwarvish Stalwart,-0.1894749661604495
+Bone ShooterDwarvish Steelclad,0.017719343313399305
+Bone ShooterDwarvish Thunderguard,0.10201455872946781
+Bone ShooterElder Wose,0.7402749098062676
+Bone ShooterElvish Captain,0.06885237518139746
+Bone ShooterElvish Druid,-0.07221511902611724
+Bone ShooterElvish Hero,-0.15807565159825926
+Bone ShooterElvish Marksman,0.05422392096967738
+Bone ShooterElvish Ranger,0.055810772971265125
+Bone ShooterElvish Sorceress,-0.13350569765439985
+Bone ShooterFire Drake,0.13056017043797144
+Bone ShooterJavelineer,0.10176498957896343
+Bone ShooterLieutenant,0.027268922552884926
+Bone ShooterLongbowman,0.037536588546359745
+Bone ShooterNecrophage,0.715962325307972
+Bone ShooterOrcish Crossbowman,-0.04491694617679849
+Bone ShooterOrcish Slayer,-0.07336048142137247
+Bone ShooterOrcish Warrior,-0.02271217217403771
+Bone ShooterPikeman,0.03407299053446335
+Bone ShooterRed Mage,-0.12015064836491768
+Bone ShooterRevenant,0.05866565790086671
+Bone ShooterRogue,-0.0894163791198744
+Bone ShooterShock Trooper,-0.6931578153880246
+Bone ShooterSwordsman,-0.2341625719661048
+Bone ShooterTrapper,0.09249008346882644
+Bone ShooterTroll,-0.12469188893527408
+Bone ShooterTroll Rocklobber,0.014945692021200361
+Bone ShooterWhite Mage,-0.1474825933417516
+Dark SorcererDark Sorcerer,-0.042065536657257395
+Dark SorcererDeathblade,-0.14968684744055702
+Dark SorcererDrake Arbiter,0.10168005155274472
+Dark SorcererDrake Flare,0.06356128259727184
+Dark SorcererDrake Gladiator,0.1724424848403921
+Dark SorcererDrake Slasher,0.15914618093537272
+Dark SorcererDrake Thrasher,-0.009379856724346717
+Dark SorcererDrake Warrior,-0.06171032451588955
+Dark SorcererDwarvish Stalwart,-0.01142900835212833
+Dark SorcererDwarvish Steelclad,-0.060948973315746356
+Dark SorcererDwarvish Thunderguard,-0.04687090757122139
+Dark SorcererElder Wose,0.043176358294671965
+Dark SorcererElvish Captain,0.16533434308448464
+Dark SorcererElvish Druid,-0.033695767004012986
+Dark SorcererElvish Hero,-0.11236024114801824
+Dark SorcererElvish Marksman,-0.2458922292129422
+Dark SorcererElvish Ranger,-0.14595834775644093
+Dark SorcererElvish Sorceress,-0.10841190417304163
+Dark SorcererFire Drake,0.029683100867063973
+Dark SorcererJavelineer,0.1612247163243096
+Dark SorcererLieutenant,-0.049477779473529965
+Dark SorcererLongbowman,0.11969916821780853
+Dark SorcererMuharib,0.6250203471637508
+Dark SorcererNecrophage,-0.12918507620875141
+Dark SorcererOrcish Crossbowman,-0.0024193075545722504
+Dark SorcererOrcish Slayer,0.06724731312979026
+Dark SorcererOrcish Warrior,0.04282329745478089
+Dark SorcererPikeman,0.14583826026523472
+Dark SorcererRed Mage,-0.17614979540074022
+Dark SorcererRevenant,-0.14714377969282827
+Dark SorcererRogue,-0.017125545379396305
+Dark SorcererSaurian Oracle,-3.9351078038981404e-4
+Dark SorcererSaurian Soothsayer,0.6996933150244617
+Dark SorcererShock Trooper,0.7069609966603124
+Dark SorcererSwordsman,0.11299787080044346
+Dark SorcererTabib,-0.7779262928870256
+Dark SorcererTrapper,-0.02009129749628258
+Dark SorcererTroll,-0.0026153690063562968
+Dark SorcererTroll Rocklobber,0.11633710394254977
+Dark SorcererWhite Mage,-0.02362230441348705
+DeathbladeDeathblade,0.0578351467015344
+DeathbladeDrake Arbiter,0.06740525434275135
+DeathbladeDrake Flare,-3.943956468482811e-4
+DeathbladeDrake Gladiator,0.2658529991617465
+DeathbladeDrake Slasher,0.09831005610542687
+DeathbladeDrake Thrasher,0.1437367365297577
+DeathbladeDrake Warrior,-0.06860768259132856
+DeathbladeDwarvish Stalwart,-0.039780105932105056
+DeathbladeDwarvish Steelclad,-0.05037892058654164
+DeathbladeDwarvish Thunderguard,-0.12809350850591647
+DeathbladeElder Wose,0.7402932699167358
+DeathbladeElvish Captain,-0.01785919212531783
+DeathbladeElvish Druid,-0.015437802939463945
+DeathbladeElvish Hero,-0.037274800402294826
+DeathbladeElvish Marksman,-0.06722250204388462
+DeathbladeElvish Ranger,-0.15096284991878986
+DeathbladeElvish Sorceress,-0.23465843456273844
+DeathbladeFire Drake,-3.9400107613267937e-4
+DeathbladeJavelineer,0.11813389559086865
+DeathbladeLieutenant,0.03463612826283143
+DeathbladeLongbowman,0.09391394719717104
+DeathbladeNecrophage,0.01312382423311113
+DeathbladeOrcish Crossbowman,0.10999154614525006
+DeathbladeOrcish Slayer,0.025485259329065913
+DeathbladeOrcish Warrior,0.1604956486841748
+DeathbladePikeman,0.08157837131228242
+DeathbladeRed Mage,-0.10645596243808023
+DeathbladeRevenant,0.3703551363354375
+DeathbladeRogue,-0.1241315290423336
+DeathbladeShock Trooper,0.7069433930201376
+DeathbladeSwordsman,-0.09130836517330665
+DeathbladeTabib,0.6250362735918937
+DeathbladeTrapper,0.11833778734230757
+DeathbladeTroll,0.11063554945771421
+DeathbladeTroll Rocklobber,0.10746815468527766
+DeathbladeWhite Mage,-0.026314580036557504
+Drake ArbiterDrake Arbiter,0.1316046767062718
+Drake ArbiterDrake Flare,0.21770557269114588
+Drake ArbiterDrake Thrasher,0.4531344052148095
+Drake ArbiterDrake Warrior,-0.12652861567289783
+Drake ArbiterDwarvish Stalwart,-0.0770145812694963
+Drake ArbiterDwarvish Steelclad,0.19489544634559142
+Drake ArbiterDwarvish Thunderguard,0.14042410226391744
+Drake ArbiterElder Wose,0.7039137062358504
+Drake ArbiterElvish Captain,0.06701605083514692
+Drake ArbiterElvish Druid,-0.021417798501725767
+Drake ArbiterElvish Hero,0.10292483189941574
+Drake ArbiterElvish Marksman,-0.08446949945178205
+Drake ArbiterElvish Ranger,0.06342777836530472
+Drake ArbiterElvish Sorceress,0.12337173932816958
+Drake ArbiterFire Drake,0.07773900694623352
+Drake ArbiterJavelineer,-0.09720604718955508
+Drake ArbiterLieutenant,-0.0436519514908925
+Drake ArbiterLongbowman,-0.024552697962200297
+Drake ArbiterOrcish Crossbowman,0.14276868756810318
+Drake ArbiterOrcish Slayer,-0.026896622095415264
+Drake ArbiterOrcish Warrior,-0.032823997600215336
+Drake ArbiterPikeman,-0.030633146274332362
+Drake ArbiterRed Mage,-0.09897623439261694
+Drake ArbiterRevenant,-0.050217709201622364
+Drake ArbiterRogue,0.11355038500920163
+Drake ArbiterSwordsman,-0.024552695161429317
+Drake ArbiterTrapper,0.09381802424943923
+Drake ArbiterTroll,0.14330462165824773
+Drake ArbiterTroll Rocklobber,-0.07183261228970814
+Drake ArbiterWhite Mage,0.07133340192466822
+Drake FlareDrake Flare,-0.15596232439668392
+Drake FlareDrake Gladiator,0.3433076707233252
+Drake FlareDrake Slasher,-0.08000674878637504
+Drake FlareDrake Thrasher,-0.5564066801435734
+Drake FlareDrake Warrior,-0.10108748402433354
+Drake FlareDwarvish Stalwart,0.2732377598741926
+Drake FlareDwarvish Steelclad,0.2450802617484823
+Drake FlareDwarvish Thunderguard,-0.026647821315471477
+Drake FlareElder Wose,0.7038961129039617
+Drake FlareElvish Captain,0.12498856974742419
+Drake FlareElvish Druid,0.05357875965254476
+Drake FlareElvish Hero,0.2485013597971878
+Drake FlareElvish Marksman,0.04057945549810795
+Drake FlareElvish Ranger,0.27803203499751555
+Drake FlareElvish Sorceress,0.050253854827034164
+Drake FlareFire Drake,0.13896939270097866
+Drake FlareJavelineer,-0.007746592426205906
+Drake FlareLieutenant,0.04940290337122959
+Drake FlareLongbowman,0.028654160815759687
+Drake FlareMonawish,-0.7739380280136945
+Drake FlareNecrophage,0.16480270499261085
+Drake FlareOrcish Crossbowman,0.022526900459822485
+Drake FlareOrcish Slayer,-0.019167204903176957
+Drake FlareOrcish Warrior,0.06972567010688148
+Drake FlarePikeman,-0.09498268975268989
+Drake FlareRed Mage,-0.028071519773141734
+Drake FlareRevenant,0.06737541385747677
+Drake FlareRogue,-0.08389762619613188
+Drake FlareSaurian Oracle,0.7306436200847626
+Drake FlareShock Trooper,0.7266470737675167
+Drake FlareSwordsman,-0.0744228569607878
+Drake FlareTrapper,-0.02862137103292299
+Drake FlareTroll,-0.005152428216731688
+Drake FlareTroll Rocklobber,-0.12007150652036286
+Drake FlareWhite Mage,0.009684561038224352
+Drake GladiatorDrake Gladiator,-0.38460020072648593
+Drake GladiatorDrake Slasher,0.7123757507342804
+Drake GladiatorDrake Warrior,0.4409109395324144
+Drake GladiatorDwarvish Steelclad,0.2602733558331195
+Drake GladiatorDwarvish Thunderguard,0.21389268244160986
+Drake GladiatorElvish Captain,0.2347459064866659
+Drake GladiatorElvish Druid,0.7038961253384218
+Drake GladiatorElvish Hero,0.7038961263539267
+Drake GladiatorElvish Marksman,-0.29265705897426875
+Drake GladiatorElvish Ranger,-0.29265705999575414
+Drake GladiatorElvish Sorceress,-0.22643305521609286
+Drake GladiatorFire Drake,0.4254818351068752
+Drake GladiatorJavelineer,0.25900899260466226
+Drake GladiatorLieutenant,0.08177935250851008
+Drake GladiatorLongbowman,0.4134198519203242
+Drake GladiatorNecrophage,-0.11168747529834341
+Drake GladiatorOrcish Crossbowman,-0.07626146820119568
+Drake GladiatorOrcish Slayer,0.022494465756766484
+Drake GladiatorOrcish Warrior,-0.05430398957469056
+Drake GladiatorPikeman,0.25904639529661705
+Drake GladiatorRed Mage,-0.21035565182549226
+Drake GladiatorRevenant,-0.14635936258472257
+Drake GladiatorRogue,-0.33152221915205066
+Drake GladiatorSwordsman,0.16678915444444373
+Drake GladiatorTrapper,-0.016876477293133265
+Drake GladiatorTroll,0.0852969037038517
+Drake GladiatorTroll Rocklobber,-0.07626146853039661
+Drake GladiatorWhite Mage,0.7266831646775082
+Drake SlasherDrake Slasher,0.2632810630213036
+Drake SlasherDrake Warrior,-0.2755858263892108
+Drake SlasherDwarvish Steelclad,-0.016878093793501785
+Drake SlasherDwarvish Thunderguard,0.28016165974279467
+Drake SlasherElvish Captain,0.19274389328132216
+Drake SlasherElvish Druid,-0.13405264432770234
+Drake SlasherElvish Hero,0.30088959895388034
+Drake SlasherElvish Marksman,0.7039312589808885
+Drake SlasherElvish Ranger,0.08093681998347095
+Drake SlasherElvish Sorceress,0.46730960545765765
+Drake SlasherFire Drake,0.23711103201923164
+Drake SlasherJavelineer,0.028628043377373864
+Drake SlasherLieutenant,-0.3687269987116098
+Drake SlasherLongbowman,-0.14438685731575712
+Drake SlasherNecrophage,-0.20422793878975765
+Drake SlasherOrcish Crossbowman,0.2529031481655225
+Drake SlasherOrcish Slayer,0.12117549509671575
+Drake SlasherOrcish Warrior,0.39550879932180194
+Drake SlasherPikeman,0.4443917231161845
+Drake SlasherRed Mage,0.08032240987323432
+Drake SlasherRevenant,-0.6756194364357946
+Drake SlasherRogue,-0.13882595469936324
+Drake SlasherSwordsman,-0.43575021167814776
+Drake SlasherTrapper,-0.09363320066855374
+Drake SlasherTroll,0.1952449098120121
+Drake SlasherTroll Rocklobber,0.29917453734469523
+Drake SlasherWhite Mage,0.7039136961849218
+Drake ThrasherDrake Thrasher,-0.6698865451655245
+Drake ThrasherDrake Warrior,0.0586786777239616
+Drake ThrasherDwarvish Stalwart,0.20184673716385593
+Drake ThrasherDwarvish Steelclad,0.16782026603347133
+Drake ThrasherDwarvish Thunderguard,0.2931639905933162
+Drake ThrasherElder Wose,0.7038961185130442
+Drake ThrasherElvish Captain,-0.168809337553017
+Drake ThrasherElvish Druid,-0.12386810619378849
+Drake ThrasherElvish Hero,-0.12667007859799312
+Drake ThrasherElvish Marksman,0.04056094452351736
+Drake ThrasherElvish Ranger,0.029772974406151273
+Drake ThrasherElvish Sorceress,-0.17792346250326369
+Drake ThrasherFire Drake,-0.12522922631710617
+Drake ThrasherJavelineer,-0.09065415530869717
+Drake ThrasherLieutenant,0.047895032031042596
+Drake ThrasherLongbowman,-0.034226269197519234
+Drake ThrasherMuharib,0.6287267140729548
+Drake ThrasherOrcish Crossbowman,-0.0013332012838020754
+Drake ThrasherOrcish Slayer,-0.1056796418278377
+Drake ThrasherOrcish Warrior,-0.2085230054027119
+Drake ThrasherPikeman,0.10014227587356035
+Drake ThrasherRed Mage,-0.1016633695746951
+Drake ThrasherRevenant,-0.06917969249786102
+Drake ThrasherRogue,-0.0966855251167066
+Drake ThrasherSwordsman,-0.02195741203002607
+Drake ThrasherTrapper,0.1479230209451714
+Drake ThrasherTroll,0.042873023566674925
+Drake ThrasherTroll Rocklobber,-0.036116068640326814
+Drake ThrasherWhite Mage,-0.16309308952590276
+Drake WardenElvish Marshal,0.7038961220656456
+Drake WarriorDrake Warrior,-0.06587879520561477
+Drake WarriorDwarvish Stalwart,-0.016895955897160902
+Drake WarriorDwarvish Steelclad,0.18230995994427657
+Drake WarriorDwarvish Thunderguard,0.2225640105796489
+Drake WarriorElvish Captain,0.16774035432527165
+Drake WarriorElvish Druid,-0.0342244129831795
+Drake WarriorElvish Hero,0.11051958269850011
+Drake WarriorElvish Marksman,0.13769645476995088
+Drake WarriorElvish Ranger,0.14248092876070198
+Drake WarriorElvish Sorceress,0.05735559895742942
+Drake WarriorFire Drake,0.24698178200163085
+Drake WarriorJavelineer,-0.07020272598241606
+Drake WarriorLieutenant,0.06820783640517918
+Drake WarriorLongbowman,0.06933884014629103
+Drake WarriorMudafi,0.6287266993788811
+Drake WarriorMuharib,0.628726700334801
+Drake WarriorNecrophage,-0.11168750381083263
+Drake WarriorOrcish Crossbowman,-0.07960580548388155
+Drake WarriorOrcish Slayer,0.05546134651924253
+Drake WarriorOrcish Warrior,0.08543222036614657
+Drake WarriorPikeman,-0.06633655667868688
+Drake WarriorRed Mage,-0.09262929102241992
+Drake WarriorRevenant,-0.07681866929746074
+Drake WarriorRogue,-0.07010939656156417
+Drake WarriorSaurian Soothsayer,-0.6698865681468327
+Drake WarriorSwordsman,-0.07900571046323433
+Drake WarriorTrapper,0.19097732527939468
+Drake WarriorTroll,-0.056894702025111814
+Drake WarriorTroll Rocklobber,0.011181628362455566
+Drake WarriorWhite Mage,0.10128745759251362
+Dwarvish LordHalberdier,-0.662633030769506
+Dwarvish LordOrcish Warlord,-0.6519489504324127
+Dwarvish SentinelMage of Light,0.7028517820868619
+Dwarvish StalwartDwarvish Stalwart,-0.07438478671732313
+Dwarvish StalwartDwarvish Steelclad,-0.4507359537330943
+Dwarvish StalwartDwarvish Thunderguard,-0.037438749234400534
+Dwarvish StalwartElvish Captain,0.041449721709852484
+Dwarvish StalwartElvish Druid,-0.02254808269786526
+Dwarvish StalwartElvish Hero,-0.07989576141454953
+Dwarvish StalwartElvish Marksman,-0.12779730088463168
+Dwarvish StalwartElvish Ranger,-0.05979388637914864
+Dwarvish StalwartElvish Sorceress,0.20391022757663793
+Dwarvish StalwartFire Drake,-0.13012830792938607
+Dwarvish StalwartJavelineer,-0.09757167122294458
+Dwarvish StalwartLieutenant,-0.07847772694277992
+Dwarvish StalwartLongbowman,-0.19029975103751004
+Dwarvish StalwartNecrophage,-0.7051544653939185
+Dwarvish StalwartOrcish Crossbowman,-0.1608116863324665
+Dwarvish StalwartOrcish Slayer,-0.13864911424875379
+Dwarvish StalwartOrcish Warrior,-0.08585045348855787
+Dwarvish StalwartPikeman,0.004535182236581185
+Dwarvish StalwartRed Mage,-0.23153467029072705
+Dwarvish StalwartRevenant,0.08090998808855517
+Dwarvish StalwartRogue,-0.36658431049052764
+Dwarvish StalwartSwordsman,-0.11113204199291175
+Dwarvish StalwartTrapper,-0.026206729005135924
+Dwarvish StalwartTroll,-0.2304920459481439
+Dwarvish StalwartTroll Rocklobber,-0.12464273431774173
+Dwarvish StalwartWhite Mage,-0.03977638446782507
+Dwarvish SteelcladDwarvish Steelclad,-0.452361573834218
+Dwarvish SteelcladDwarvish Thunderguard,0.2131468152449707
+Dwarvish SteelcladElvish Captain,0.2054550732573164
+Dwarvish SteelcladElvish Druid,0.08799220843566409
+Dwarvish SteelcladElvish Hero,0.02964488295719718
+Dwarvish SteelcladElvish Marksman,0.17324929771948916
+Dwarvish SteelcladElvish Ranger,-0.048178505266513974
+Dwarvish SteelcladElvish Sorceress,0.05620772995405847
+Dwarvish SteelcladFire Drake,-0.17653991587042034
+Dwarvish SteelcladJavelineer,-0.15320645973653535
+Dwarvish SteelcladLieutenant,-0.06442013097945416
+Dwarvish SteelcladLongbowman,0.10384139169895813
+Dwarvish SteelcladNecrophage,0.4579342932029929
+Dwarvish SteelcladOrcish Crossbowman,-0.22539401258516814
+Dwarvish SteelcladOrcish Slayer,-0.31921185907350397
+Dwarvish SteelcladOrcish Warrior,0.05934701623299853
+Dwarvish SteelcladPikeman,0.15839852312365496
+Dwarvish SteelcladRed Mage,-0.17674513161668043
+Dwarvish SteelcladRevenant,0.07534619700417738
+Dwarvish SteelcladRogue,-0.046456187310600354
+Dwarvish SteelcladSaurian Oracle,-0.6606413042201398
+Dwarvish SteelcladShock Trooper,-0.19013393719614993
+Dwarvish SteelcladSwordsman,-0.08334799254419481
+Dwarvish SteelcladTrapper,-0.04004577791858223
+Dwarvish SteelcladTroll,-0.07622319778727957
+Dwarvish SteelcladTroll Rocklobber,-0.23362277812885313
+Dwarvish SteelcladWhite Mage,0.09141213309142572
+Dwarvish ThunderguardDwarvish Thunderguard,-0.038456185164044906
+Dwarvish ThunderguardElvish Captain,0.05363363028351109
+Dwarvish ThunderguardElvish Druid,0.07985962796254165
+Dwarvish ThunderguardElvish Hero,-0.02840717332804882
+Dwarvish ThunderguardElvish Marksman,0.23381124076893195
+Dwarvish ThunderguardElvish Ranger,0.003048198354890301
+Dwarvish ThunderguardElvish Sorceress,0.379716221243145
+Dwarvish ThunderguardFire Drake,-0.047154201602259194
+Dwarvish ThunderguardJavelineer,-0.005179086866353778
+Dwarvish ThunderguardLieutenant,0.009023623527088976
+Dwarvish ThunderguardLongbowman,0.04094359444005124
+Dwarvish ThunderguardMudafi,0.7101780137878676
+Dwarvish ThunderguardMuharib,-0.6899500040371672
+Dwarvish ThunderguardNecrophage,0.13269693699900495
+Dwarvish ThunderguardOrcish Crossbowman,0.06751600764939994
+Dwarvish ThunderguardOrcish Slayer,-0.06099811491104825
+Dwarvish ThunderguardOrcish Warrior,0.10052803763963082
+Dwarvish ThunderguardPikeman,0.055671192823659364
+Dwarvish ThunderguardRed Mage,-0.02383616920189148
+Dwarvish ThunderguardRevenant,0.17313828391200434
+Dwarvish ThunderguardRogue,-0.06308061940733656
+Dwarvish ThunderguardSwordsman,-0.1770125036425018
+Dwarvish ThunderguardTrapper,0.06194395240779422
+Dwarvish ThunderguardTroll,-0.08585032124558414
+Dwarvish ThunderguardTroll Rocklobber,-4.6400452207114685e-4
+Dwarvish ThunderguardWhite Mage,-0.02835051299589435
+Elder WoseElvish Captain,0.01726336761267471
+Elder WoseElvish Sorceress,-0.6879878908594822
+Elder WoseLieutenant,-0.6849920620579234
+Elder WoseLongbowman,-0.6849920630644522
+Elder WoseOrcish Crossbowman,0.7177105480023608
+Elder WoseOrcish Slayer,-0.6825532888217254
+Elder WoseOrcish Warrior,-0.6825190608567616
+Elder WoseRed Mage,-0.6849920670979789
+Elder WoseRevenant,-0.715787720966724
+Elder WoseRogue,0.25361014353146005
+Elder WoseTrapper,-0.6787565301780534
+Elder WoseTroll,-0.4785628534890157
+Elder WoseTroll Rocklobber,-0.6825361867212327
+Elvish CaptainElvish Captain,-0.35661843559275536
+Elvish CaptainElvish Druid,-0.04034523393732807
+Elvish CaptainElvish Hero,-0.30318080716209517
+Elvish CaptainElvish Marksman,-0.16673498523321967
+Elvish CaptainElvish Ranger,0.24296431189046575
+Elvish CaptainElvish Sorceress,0.010366971502843105
+Elvish CaptainFire Drake,-0.12213013955943681
+Elvish CaptainJavelineer,-0.005921731986611331
+Elvish CaptainLieutenant,-0.053616416371555606
+Elvish CaptainLongbowman,-0.26912758556000926
+Elvish CaptainNecrophage,-0.24738736754476395
+Elvish CaptainOrcish Crossbowman,-0.25342371465323793
+Elvish CaptainOrcish Slayer,-0.17885844894843583
+Elvish CaptainOrcish Warrior,0.0520313813561481
+Elvish CaptainPikeman,-0.17242446052643012
+Elvish CaptainRed Mage,-0.24882301453409766
+Elvish CaptainRevenant,0.023722125230948847
+Elvish CaptainRogue,-0.07261258840840505
+Elvish CaptainSwordsman,-0.09888393030473658
+Elvish CaptainTabib,0.6250204212524131
+Elvish CaptainTrapper,-0.04594459674292378
+Elvish CaptainTroll,-0.10909320730950448
+Elvish CaptainTroll Rocklobber,0.061421006234796294
+Elvish CaptainWhite Mage,0.035941496039255214
+Elvish DruidElvish Druid,-0.6841691308644713
+Elvish DruidElvish Hero,0.1505175059470275
+Elvish DruidElvish Marksman,0.07479993120268875
+Elvish DruidElvish Ranger,0.15213386049841826
+Elvish DruidElvish Sorceress,-0.4029272233313764
+Elvish DruidFire Drake,0.022086338768721517
+Elvish DruidJavelineer,0.04641698301013213
+Elvish DruidLieutenant,0.11129829134833107
+Elvish DruidLongbowman,0.2469385317555425
+Elvish DruidNecrophage,0.12133660568321401
+Elvish DruidOrcish Crossbowman,-0.24749871093063475
+Elvish DruidOrcish Slayer,-0.13471557943156148
+Elvish DruidOrcish Warrior,0.09947522641681732
+Elvish DruidPikeman,0.04927586557323646
+Elvish DruidRed Mage,-0.08285973398492015
+Elvish DruidRevenant,0.23838881848640386
+Elvish DruidRogue,-0.14985854489773676
+Elvish DruidSwordsman,-0.033001731142697374
+Elvish DruidTrapper,0.1614842472215551
+Elvish DruidTroll,-0.06739056476005457
+Elvish DruidTroll Rocklobber,0.06731813512640394
+Elvish DruidWhite Mage,-0.029776914275119318
+Elvish EnchantressTroll Warrior,-0.6825191289878855
+Elvish HeroElvish Hero,-0.6841862971898075
+Elvish HeroElvish Marksman,-0.3730407321762834
+Elvish HeroElvish Ranger,0.24591594442919618
+Elvish HeroElvish Sorceress,-0.4870736856301311
+Elvish HeroFire Drake,0.006012411234279597
+Elvish HeroJavelineer,0.512667840224861
+Elvish HeroLieutenant,-0.01021545729399647
+Elvish HeroLongbowman,0.016376481081750206
+Elvish HeroMuharib,-0.7779262270394045
+Elvish HeroNecrophage,-0.3631658021170929
+Elvish HeroOrcish Crossbowman,0.1112330766904478
+Elvish HeroOrcish Slayer,-0.33758911972384986
+Elvish HeroOrcish Warrior,-0.1540560191716579
+Elvish HeroPikeman,-0.23302469521803063
+Elvish HeroRed Mage,-0.004536846351153477
+Elvish HeroRevenant,0.16015341712145262
+Elvish HeroRogue,-0.13883741644800213
+Elvish HeroSwordsman,0.16663834977334838
+Elvish HeroTrapper,-0.1932672736081546
+Elvish HeroTroll,0.003004681061305404
+Elvish HeroTroll Rocklobber,0.01908428136965852
+Elvish HeroWhite Mage,-0.07738651126955985
+Elvish MarksmanElvish Marksman,0.1554380688919606
+Elvish MarksmanElvish Ranger,-0.15978378683689526
+Elvish MarksmanElvish Sorceress,0.1521520919428638
+Elvish MarksmanFire Drake,-0.1510096826247431
+Elvish MarksmanGhazi,0.6250203787966486
+Elvish MarksmanJavelineer,-0.06044506547291788
+Elvish MarksmanLieutenant,-0.0018159864207826486
+Elvish MarksmanLongbowman,0.08787035089008793
+Elvish MarksmanNecrophage,-0.7157343812483021
+Elvish MarksmanOrcish Crossbowman,0.03776494861656613
+Elvish MarksmanOrcish Slayer,-0.1757908645194968
+Elvish MarksmanOrcish Warrior,0.22141449878161062
+Elvish MarksmanPikeman,-0.046478706361055076
+Elvish MarksmanRed Mage,0.016211382560009344
+Elvish MarksmanRevenant,0.05662483223290184
+Elvish MarksmanRogue,-0.006000067491602969
+Elvish MarksmanSwordsman,-0.0604450821226126
+Elvish MarksmanTrapper,0.223061722373548
+Elvish MarksmanTroll,-0.07118925120792112
+Elvish MarksmanTroll Rocklobber,-0.08343106309424844
+Elvish MarksmanWhite Mage,0.08924776243346111
+Elvish RangerElvish Ranger,-0.12101687617077482
+Elvish RangerElvish Sorceress,0.24408885172647674
+Elvish RangerFire Drake,-0.024013755614416182
+Elvish RangerJavelineer,0.10650919690982517
+Elvish RangerLieutenant,-0.05518566697104551
+Elvish RangerLongbowman,-0.09891254696416506
+Elvish RangerNecrophage,0.2138114696567673
+Elvish RangerOrcish Crossbowman,-0.17624128567700706
+Elvish RangerOrcish Slayer,0.037764930322916404
+Elvish RangerOrcish Warrior,0.01908609092150872
+Elvish RangerPikeman,0.0931624339670813
+Elvish RangerRed Mage,0.05377848902211312
+Elvish RangerRevenant,-0.0776290740309396
+Elvish RangerRogue,-0.11521859255778774
+Elvish RangerSwordsman,-0.21449137145236843
+Elvish RangerTrapper,0.11184933037209266
+Elvish RangerTroll,0.10206514647893966
+Elvish RangerTroll Rocklobber,0.03594570380899364
+Elvish RangerWhite Mage,-0.12227639936571882
+Elvish SorceressElvish Sorceress,-0.39971665864658995
+Elvish SorceressFire Drake,0.08492282975720698
+Elvish SorceressJavelineer,0.13554965610513403
+Elvish SorceressLieutenant,0.0010160047584979323
+Elvish SorceressLongbowman,0.183263576844359
+Elvish SorceressNecrophage,0.21379596445706966
+Elvish SorceressOrcish Crossbowman,-0.03855269702976022
+Elvish SorceressOrcish Slayer,0.019083319545938084
+Elvish SorceressOrcish Warrior,0.06232529527612888
+Elvish SorceressPikeman,0.18920842204539456
+Elvish SorceressRed Mage,-0.12276368510217787
+Elvish SorceressRevenant,0.2519195713306385
+Elvish SorceressRogue,-0.0396366612912207
+Elvish SorceressSaurian Oracle,0.7205099254578219
+Elvish SorceressSwordsman,0.10273543670330805
+Elvish SorceressTrapper,-0.10098472365361054
+Elvish SorceressTroll,-0.06134610338975342
+Elvish SorceressTroll Rocklobber,0.216723227275474
+Elvish SorceressWhite Mage,0.051836203011794264
+Fire DrakeFire Drake,0.26333807348454163
+Fire DrakeJavelineer,0.042772436620464815
+Fire DrakeLieutenant,-0.003267973492579379
+Fire DrakeLongbowman,-0.21255318227051484
+Fire DrakeNecrophage,0.7247716139436663
+Fire DrakeOrcish Crossbowman,0.04721928715777029
+Fire DrakeOrcish Slayer,-0.0403892822297507
+Fire DrakeOrcish Warrior,-0.09836576541364882
+Fire DrakePikeman,0.20148537366541197
+Fire DrakeRed Mage,-0.12972368859433528
+Fire DrakeRevenant,0.01693696607520352
+Fire DrakeRogue,0.18974428903701684
+Fire DrakeSwordsman,-0.012033634960237237
+Fire DrakeTrapper,0.11021635149384346
+Fire DrakeTroll,-0.03611606108009675
+Fire DrakeTroll Rocklobber,-0.09285748975855677
+Fire DrakeWhite Mage,0.03840932109187152
+GeneralInferno Drake,-0.70223860480242
+GhaziPikeman,0.7715021210398653
+HalberdierMage of Light,0.7091982237770128
+JavelineerJavelineer,-0.10929785301763185
+JavelineerLieutenant,0.1460641360003925
+JavelineerLongbowman,-0.21940076258333038
+JavelineerNecrophage,-0.3281453516206479
+JavelineerOrcish Crossbowman,-0.05796547577505573
+JavelineerOrcish Slayer,-0.12721905916703038
+JavelineerOrcish Warrior,0.05186035837624692
+JavelineerPikeman,-0.07427412127477818
+JavelineerRed Mage,-0.10972370766656254
+JavelineerRevenant,-0.14958319820473176
+JavelineerRogue,0.2728391258409702
+JavelineerSaurian Oracle,0.6978416514153595
+JavelineerSwordsman,0.12034591004171079
+JavelineerTrapper,0.29750499737783764
+JavelineerTroll,0.03778159341714686
+JavelineerTroll Rocklobber,0.011181317057778879
+JavelineerWhite Mage,0.1027113936670776
+LieutenantLieutenant,-0.21853931393676432
+LieutenantLongbowman,-0.09949451082820356
+LieutenantMonawish,0.6544916967699194
+LieutenantMudafi,0.6544751707261922
+LieutenantNecrophage,-0.4788370039886947
+LieutenantOrcish Crossbowman,-0.04371671271341477
+LieutenantOrcish Slayer,-0.0996304758034345
+LieutenantOrcish Warrior,0.07818305180743756
+LieutenantPikeman,0.16089480636605755
+LieutenantRed Mage,-0.007846349107174673
+LieutenantRevenant,0.018808696401651344
+LieutenantRogue,0.15717278448900018
+LieutenantSwordsman,0.05600483544873588
+LieutenantTrapper,0.07884337884722305
+LieutenantTroll,0.019336626395118073
+LieutenantTroll Rocklobber,0.061318935595106205
+LieutenantWhite Mage,0.07634037279622796
+LongbowmanLongbowman,0.7270529491004701
+LongbowmanNecrophage,-0.21197978649889365
+LongbowmanOrcish Crossbowman,-0.07903429911121121
+LongbowmanOrcish Slayer,0.07870685336059996
+LongbowmanOrcish Warrior,-2.7809282024806236e-5
+LongbowmanPikeman,-0.39453282276302964
+LongbowmanRed Mage,-0.17895283242159227
+LongbowmanRevenant,-0.02354438096590294
+LongbowmanRogue,-0.07230884621663423
+LongbowmanSwordsman,-0.03881670300447179
+LongbowmanTrapper,0.10564241995256946
+LongbowmanTroll,-0.026538242551428573
+LongbowmanTroll Rocklobber,0.042608812566823674
+LongbowmanWhite Mage,0.13963039575217098
+MudafiOrcish Crossbowman,0.6287252240044151
+MuharibSwordsman,0.7715020085978362
+MuharibTroll,0.6287252259792708
+MuharibWhite Mage,-0.616576542667873
+NecrophageNecrophage,0.363406904499691
+NecrophageOrcish Crossbowman,0.23623501876850533
+NecrophageOrcish Slayer,-0.6948448669661423
+NecrophageOrcish Warrior,0.005710761590699196
+NecrophagePikeman,-0.6931579329032173
+NecrophageRed Mage,-0.07600910136112511
+NecrophageRevenant,0.013124290241186448
+NecrophageRogue,-0.6709385112296854
+NecrophageSwordsman,0.7069784950170523
+NecrophageTrapper,0.7295958970936037
+NecrophageTroll,-0.09300164507279102
+NecrophageTroll Rocklobber,0.4220153276380099
+NecrophageWhite Mage,-0.6931752682095941
+Orcish CrossbowmanOrcish Crossbowman,-0.11393559274033818
+Orcish CrossbowmanOrcish Slayer,-0.2715824410862015
+Orcish CrossbowmanOrcish Warrior,0.32793252170561915
+Orcish CrossbowmanPikeman,0.2457810258421
+Orcish CrossbowmanRed Mage,-0.18389517760635338
+Orcish CrossbowmanRevenant,0.07725775523973215
+Orcish CrossbowmanRogue,-0.059492115604689984
+Orcish CrossbowmanSwordsman,0.042750908548367036
+Orcish CrossbowmanTrapper,-0.0018417625419799037
+Orcish CrossbowmanTroll,0.11753569983460692
+Orcish CrossbowmanTroll Rocklobber,0.015632153186447763
+Orcish CrossbowmanWhite Mage,-0.10653280036777722
+Orcish SlayerOrcish Slayer,-0.2528751947291538
+Orcish SlayerOrcish Warrior,0.01594763968050188
+Orcish SlayerPikeman,-0.08866823047946717
+Orcish SlayerRed Mage,0.03444795746572466
+Orcish SlayerRevenant,-0.0930986178474785
+Orcish SlayerRogue,0.14673820336241336
+Orcish SlayerShock Trooper,0.714016763875887
+Orcish SlayerSwordsman,0.08093069134909141
+Orcish SlayerTrapper,0.14665321308639687
+Orcish SlayerTroll,-0.383147088370434
+Orcish SlayerTroll Rocklobber,0.08740122463166966
+Orcish SlayerWhite Mage,-0.10720760511265391
+Orcish WarriorOrcish Warrior,0.30106126423402907
+Orcish WarriorPikeman,-0.18497671505200944
+Orcish WarriorRed Mage,-0.0776130672381123
+Orcish WarriorRevenant,0.22531704281122072
+Orcish WarriorRogue,0.11477331626447294
+Orcish WarriorSwordsman,0.16428195309301652
+Orcish WarriorTabib,-0.605624304711496
+Orcish WarriorTrapper,0.050353595554840466
+Orcish WarriorTroll,0.25788219337152646
+Orcish WarriorTroll Rocklobber,0.11107107929919177
+Orcish WarriorWhite Mage,-0.10497299654782358
+PikemanPikeman,-0.6734978532742932
+PikemanRed Mage,0.1848629756512442
+PikemanRevenant,0.0046869601947002616
+PikemanRogue,0.10742681510158465
+PikemanShock Trooper,0.7123150575347322
+PikemanSwordsman,-0.21763501089690485
+PikemanTrapper,0.14155460468110131
+PikemanTroll,-0.04895042584712966
+PikemanTroll Rocklobber,-0.07903448047686307
+PikemanWhite Mage,-0.00794910765663883
+Red MageRed Mage,-0.05293589435448118
+Red MageRevenant,0.12848816246689648
+Red MageRogue,0.06353932749265617
+Red MageSaurian Soothsayer,0.7205096621689789
+Red MageSwordsman,0.1066087014886291
+Red MageTrapper,0.1581985511388781
+Red MageTroll,0.0783044576883139
+Red MageTroll Rocklobber,0.19923629617716426
+Red MageWhite Mage,0.003391370492403843
+RevenantRevenant,-0.059598024396706056
+RevenantRogue,-0.1943326603478982
+RevenantSwordsman,-0.01911960371917495
+RevenantTrapper,-0.07637905180983467
+RevenantTroll,-0.03699627892195496
+RevenantTroll Rocklobber,0.10182237143384364
+RevenantWhite Mage,-0.044905884521089075
+RogueRogue,-0.12938054300197976
+RogueSaurian Soothsayer,0.7402305039170978
+RogueShock Trooper,0.040909792382873726
+RogueSwordsman,0.11780852327191253
+RogueTrapper,0.17613256684798526
+RogueTroll,-0.1686356055007971
+RogueTroll Rocklobber,0.03552003647078403
+RogueWhite Mage,0.04030421464198248
+Shock TrooperTroll,-0.6897713260050805
+SwordsmanSwordsman,0.12772734895776303
+SwordsmanTrapper,-0.11767592822337257
+SwordsmanTroll,0.12034548089994676
+SwordsmanTroll Rocklobber,0.11874745516637827
+SwordsmanWhite Mage,0.06560402453922476
+TabibTroll,-0.773939744202703
+TrapperTrapper,0.024376756625775625
+TrapperTroll,-0.1626852730678212
+TrapperTroll Rocklobber,-0.1496258989725126
+TrapperWhite Mage,0.09330499603706517
+Troll RocklobberTroll Rocklobber,0.024399634851741254
+Troll RocklobberWhite Mage,-0.07763928405087316
+TrollTroll,-0.11394940148994263
+TrollTroll Rocklobber,0.04534110093504723
+TrollWhite Mage,0.07619868642599269
+White MageWhite Mage,-0.0537227041543962
+<- leader_cleaned$faction_feature,0.31532253625087386

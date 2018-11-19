@@ -1,0 +1,28 @@
+feature,coefficient
+DrakesDrakes,0.18184630210302782
+DrakesKhalifate,0.843974433882155
+DrakesKnalgan Alliance,0.27554298083051887
+DrakesLoyalists,-0.1424203247986922
+DrakesNortherners,-0.08603822686822468
+DrakesRebels,0.08219117225135467
+DrakesUndead,-0.1241553899168755
+KhalifateKnalgan Alliance,-0.01988646451180357
+KhalifateLoyalists,-0.5793902418170089
+KhalifateNortherners,0.8439888729694536
+KhalifateRebels,-0.8824086531545573
+KhalifateUndead,-0.882408652231038
+Knalgan AllianceKnalgan Alliance,0.10333046976863379
+Knalgan AllianceLoyalists,-0.25531737984543157
+Knalgan AllianceNortherners,-0.3640862058870249
+Knalgan AllianceRebels,0.09256738869494409
+Knalgan AllianceUndead,0.17138702210527806
+LoyalistsLoyalists,0.1462327109358653
+LoyalistsNortherners,0.01792340876337681
+LoyalistsRebels,0.029766175724870118
+LoyalistsUndead,-0.051944452443037914
+NorthernersNortherners,0.10351889218803928
+NorthernersRebels,0.05458057925338155
+NorthernersUndead,-0.06808963402281992
+RebelsRebels,0.03802057876783399
+RebelsUndead,0.27615374802583303
+UndeadUndead,0.03732204744672972
