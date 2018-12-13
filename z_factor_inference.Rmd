@@ -1,0 +1,107 @@
+---
+title: "Inference on Categorical Variables"
+output: html_notebook
+---
+
+Load libraries and data
+
+```{r, message=F, warning=F}
+library(caret)
+library(glmnet)
+library(ROCR)
+library(rebus)
+library(broom)
+source('tidy_data.R')
+```
+
+```{r, message=FALSE, warning=FALSE}
+load_wesnoth()
+set.seed(123)
+```
+Let us first split the games in test and train set
+```{r}
+two_player_games <- two_player_games %>% filter(complete.cases(.))
+
+idx <- createDataPartition(two_player_games$first_player_wins, p = 0.8, list = F)
+train_set <- two_player_games[idx,]
+test_set <- two_player_games[-idx,]
+
+(dim(train_set))
+(dim(test_set))
+```
+
+It is sensible to create all features on the train set so we can accurately judge performance on the test set. We start by estimating the faction impact because we know already that the leaders are a perturbation to the faction choice.
+
+```{r}
+game_factions <- player_game_statistics %>% 
+    select(game_id, player_id, faction, leader)
+
+aug_games <-  test_set %>% 
+    left_join(game_factions, 
+              by =c('game_id' = 'game_id','first_player_id'='player_id') ) %>% 
+    rename(fp_faction = faction, fp_leader = leader ) %>% 
+    left_join(game_factions, 
+              by =c('game_id' = 'game_id','second_player_id'='player_id') ) %>% 
+    rename(sp_faction = faction, sp_leader = leader)
+
+faction_cleaned <- aug_games  %>% 
+    # Order the factors alphabetically, this way more data per faction is obtained  
+    mutate(factor_relation = as.character(fp_faction) <= as.character(sp_faction)) %>% 
+    mutate(faction_factor = if_else(factor_relation, 
+                                  str_c(fp_faction,' - ', sp_faction),
+                                  str_c(sp_faction,' - ', fp_faction)),
+           faction_win = if_else(factor_relation,
+                                 first_player_wins,
+                                 1-first_player_wins)) %>% 
+    select(faction_factor, faction_win)
+
+faction_cleaned %>% head()
+```
+
+We can now calculate the the $\alpha$ and $\beta$ variables of the Beta distribution. We assume a maximum entropy prior and therefore choose $\alpha_0 = \beta_0 = 1$
+```{r}
+faction_cleaned <- faction_cleaned %>% 
+  group_by(faction_factor) %>% 
+  summarise(alpha = 1 + sum(faction_win), 
+            beta = 1 + n() - sum(faction_win))
+
+faction_cleaned %>% head()
+```
+These values can be the new priors for the leader matchups. Let's write a function that adds the parameter values to the faction matchup of a data frame. 
+
+```{r}
+add_faction_parameters <- function(df, 
+                                   faction_lookup = faction_cleaned, 
+                                   statistics = player_game_statistics){
+  # Select the relevant game statistics
+  game_factions <- player_game_statistics %>% 
+      select(game_id, player_id, faction)
+
+  # Add the faction information 
+  df <-  df %>% 
+    left_join(game_factions, 
+              by =c('game_id' = 'game_id','first_player_id'='player_id') ) %>% 
+    rename(fp_faction = faction) %>% 
+    left_join(game_factions, 
+              by =c('game_id' = 'game_id','second_player_id'='player_id') ) %>% 
+    rename(sp_faction = faction)
+  
+
+  
+  df <- df %>% 
+    mutate(faction_relation = as.character(fp_faction) <= as.character(sp_faction),
+          faction_factor = if_else(faction_relation, 
+                                      str_c(fp_faction,' - ', sp_faction),
+                                      str_c(sp_faction,' - ', fp_faction))) %>% 
+    left_join(faction_lookup, on ='faction_factor') %>% 
+    mutate(faction_alpha = if_else(faction_relation, alpha, beta),
+           faction_beta = if_else(faction_relation, beta, alpha)) %>% 
+    # Set default values
+    mutate(faction_alpha = if_else(is.na(faction_alpha), 1, faction_alpha),
+           faction_beta = if_else(is.na(faction_beta), 1, faction_beta)) %>% 
+    select(-c(alpha,beta,fp_faction, sp_faction, faction_relation, faction_factor ))
+  return(df)
+}
+```
+The question is now how to add the leader factors as perturbation. One problem is that several faction combinations can have the same leader-leader setups. It might be better to take the faction setup as a completely independent observation and let the final algorithm find a reasonable weighting between the  faction and the leader parameters.
+
