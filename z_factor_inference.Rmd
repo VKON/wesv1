@@ -1,0 +1,274 @@
+---
+title: "Inference on Categorical Variables"
+output: html_notebook
+---
+
+Load libraries and data
+
+```{r, message=F, warning=F, results="hide"}
+library(caret)
+library(glmnet)
+library(ROCR)
+library(rebus)
+library(broom)
+source('tidy_data.R')
+```
+
+```{r, message=FALSE, warning=FALSE, results = "hide"}
+load_wesnoth()
+set.seed(123)
+```
+Let us first split the games in test and train set
+```{r}
+two_player_games <- two_player_games %>% filter(complete.cases(.))
+
+idx <- createDataPartition(two_player_games$first_player_wins, p = 0.8, list = F)
+train_set <- two_player_games[idx,]
+test_set <- two_player_games[-idx,]
+
+(dim(train_set))
+(dim(test_set))
+```
+
+It is sensible to create all features on the train set so we can accurately judge performance on the test set. We start by estimating the faction impact because we know already that the leaders are a perturbation to the faction choice.
+
+```{r}
+game_factions <- player_game_statistics %>% 
+    select(game_id, player_id, faction, leader)
+
+aug_games <-  train_set %>% 
+    left_join(game_factions, 
+              by =c('game_id' = 'game_id','first_player_id'='player_id') ) %>% 
+    rename(fp_faction = faction, fp_leader = leader ) %>% 
+    left_join(game_factions, 
+              by =c('game_id' = 'game_id','second_player_id'='player_id') ) %>% 
+    rename(sp_faction = faction, sp_leader = leader)
+
+faction_cleaned <- aug_games  %>% 
+    # Order the factors alphabetically, this way more data per faction is obtained  
+    mutate(factor_relation = as.character(fp_faction) <= as.character(sp_faction)) %>% 
+    mutate(faction_factor = if_else(factor_relation, 
+                                  str_c(fp_faction,' - ', sp_faction),
+                                  str_c(sp_faction,' - ', fp_faction)),
+           faction_win = if_else(factor_relation,
+                                 first_player_wins,
+                                 1-first_player_wins)) %>% 
+    select(faction_factor, faction_win)
+
+faction_cleaned %>% head()
+```
+
+We can now calculate the the $\alpha$ and $\beta$ variables of the Beta distribution. We assume a maximum entropy prior and therefore choose $\alpha_0 = \beta_0 = 1$
+```{r}
+faction_cleaned <- faction_cleaned %>% 
+  group_by(faction_factor) %>% 
+  summarise(alpha = 1 + sum(faction_win), 
+            beta = 1 + n() - sum(faction_win))
+
+faction_cleaned %>% head()
+```
+These values can be the new priors for the leader matchups. Let's write a function that adds the parameter values to the faction matchup of a data frame. 
+
+```{r}
+add_faction_parameters <- function(df, 
+                                   faction_lookup = faction_cleaned, 
+                                   statistics = player_game_statistics){
+  # Select the relevant game statistics
+  game_factions <- player_game_statistics %>% 
+      select(game_id, player_id, faction)
+
+  # Add the faction information 
+  df <-  df %>% 
+    left_join(game_factions, 
+              by =c('game_id' = 'game_id','first_player_id'='player_id') ) %>% 
+    rename(fp_faction = faction) %>% 
+    left_join(game_factions, 
+              by =c('game_id' = 'game_id','second_player_id'='player_id') ) %>% 
+    rename(sp_faction = faction)
+  
+
+  
+  df <- df %>% 
+    mutate(faction_relation = as.character(fp_faction) <= as.character(sp_faction),
+          faction_factor = if_else(faction_relation, 
+                                      str_c(fp_faction,' - ', sp_faction),
+                                      str_c(sp_faction,' - ', fp_faction))) %>% 
+    left_join(faction_lookup, on ='faction_factor') %>% 
+    mutate(faction_alpha = if_else(faction_relation, alpha, beta),
+           faction_beta = if_else(faction_relation, beta, alpha)) %>% 
+    # Set default values
+    mutate(faction_alpha = if_else(is.na(faction_alpha), 1, faction_alpha),
+           faction_beta = if_else(is.na(faction_beta), 1, faction_beta)) %>% 
+    select(-c(alpha,beta,fp_faction, sp_faction, faction_relation, faction_factor ))
+  return(df)
+}
+```
+
+Rather than adding the leaders as a perturbation to the expectations induced by the faction order, we can take this order as an independent factor. This is a Naive Bayes classifier approach, as the features are assumed to be independent, though they are not. Perhaps the final model will be able to adjust the weighting and consider interactions between the components.
+
+```{r}
+game_factions <- player_game_statistics %>% 
+    select(game_id, player_id, leader)
+
+leader_cleaned <- train_set %>% 
+  left_join(game_factions, 
+              by =c('game_id' = 'game_id','first_player_id'='player_id') ) %>% 
+  rename(fp_leader = leader) %>% 
+  left_join(game_factions, 
+            by =c('game_id' = 'game_id','second_player_id'='player_id') ) %>% 
+  rename(sp_leader = leader) %>% 
+  mutate(leader_relation = as.character(fp_leader) <= as.character(sp_leader),
+         leader_factor = if_else(leader_relation, 
+                                      str_c(fp_leader,' - ', sp_leader),
+                                      str_c(sp_leader,' - ', fp_leader)),
+         leader_win = if_else(leader_relation,
+                                 first_player_wins,
+                                 1-first_player_wins)) %>% 
+  group_by(leader_factor) %>% 
+  summarise(alpha = 1 + sum(leader_win),
+            beta = 1+n()-sum(leader_win))
+
+leader_cleaned %>% head()
+```
+
+These factors can also be added to any data set via a function.
+```{r}
+add_leader_parameters <- function(df, 
+                                   leader_lookup = leader_cleaned, 
+                                   statistics = player_game_statistics){
+  # Select the relevant game statistics
+  game_factions <- player_game_statistics %>% 
+      select(game_id, player_id, leader)
+
+  # Add the faction information 
+  df <-  df %>% 
+    left_join(game_factions, 
+              by =c('game_id' = 'game_id','first_player_id'='player_id') ) %>% 
+    rename(fp_leader = leader) %>% 
+    left_join(game_factions, 
+              by =c('game_id' = 'game_id','second_player_id'='player_id') ) %>% 
+    rename(sp_leader = leader)
+  
+
+  
+  df <- df %>% 
+    mutate(leader_relation = as.character(fp_leader) <= as.character(sp_leader),
+          leader_factor = if_else(leader_relation, 
+                                      str_c(fp_leader,' - ', sp_leader),
+                                      str_c(sp_leader,' - ', fp_leader))) %>% 
+    left_join(leader_lookup, on ='leader_factor') %>% 
+    mutate(leader_alpha = if_else(leader_relation, alpha, beta),
+           leader_beta = if_else(leader_relation, beta, alpha)) %>% 
+    # Set default values
+    mutate(leader_alpha = if_else(is.na(leader_alpha), 1, leader_alpha),
+           leader_beta = if_else(is.na(leader_beta), 1, leader_beta)) %>% 
+    select(-c(alpha,beta,fp_leader, sp_leader, leader_relation, leader_factor ))
+  return(df)
+}
+```
+
+Next we do a similar thing for the maps. We group by map and who has the first move on the map. This is simplified, as the way the first player is defined in the data, she always has the first move. It is thus straightforward to aggregate the data
+```{r}
+map_cleaned <- two_player_games %>% 
+  left_join(game_info %>% select(game_id, map), by = c('game_id')) %>% 
+  group_by(map) %>% 
+  summarise(alpha = 1+sum(first_player_wins, na.rm = T),
+            beta = 1+n()-sum(first_player_wins, na.rm = T))
+
+map_cleaned %>% head()
+```
+
+A function that adds this information
+```{r}
+add_map_parameters <- function(df, 
+                                   map_lookup = map_cleaned, 
+                                   statistics = game_info){
+
+
+  # Add the faction information 
+  df <-  df %>% 
+    left_join(statistics %>% select(game_id, map), by = c('game_id')) 
+  
+  print(colnames(df))
+  
+  df <- df %>% 
+    left_join(map_lookup, by =c('map'))%>%
+    mutate(map_alpha = alpha,
+           map_beta = beta) %>%
+    # Set default values
+    mutate(map_alpha = if_else(is.na(map_alpha), 1, map_alpha),
+           map_beta = if_else(is.na(map_beta), 1, map_beta)) %>%
+    select(-c(alpha,beta ))
+  return(df)
+}
+```
+
+Additionally we want to add the elo difference as a feature
+```{r}
+add_elo_diff <- function(df, game_info_tbl = game_info, elo_tbl = elos){
+
+  df_with_features <- df %>%
+    left_join(game_info_tbl %>% select(game_id, date) , by = c('game_id')) %>%
+    left_join(elo_tbl %>% rename(elo_date = date), by = c('first_player_id'='player_id')) %>%
+    group_by(game_id, first_player_id)%>%
+    # Select for the latest Ranking
+    filter(elo_date < date) %>%
+    filter(elo_date == max(elo_date)) %>%
+    rename(fp_elo = elo) %>%
+    select(-elo_date) %>%
+    left_join(elo_tbl %>% rename(elo_date = date), by = c('second_player_id'='player_id')) %>%
+    group_by(game_id, second_player_id) %>%
+    # Select for the latest Ranking
+    filter(elo_date < date) %>%
+    filter(elo_date == max(elo_date)) %>%
+    rename(sp_elo = elo) %>%
+    select(-elo_date)  %>%
+    mutate(elo_diff = fp_elo - sp_elo,
+           elo_diff = if_else(is.na(elo_diff), 0.0, elo_diff)) %>%
+    select(-c(date, fp_elo, sp_elo)) %>% 
+    ungroup()
+  return(df_with_features)
+}
+```
+
+All the $\alpha$ and $\beta$ values are hard for a machine learning algorithm to learn. One way to help might be to transform the parameters into an average of the expected value for each feature; map, faction or leader; which is indexed by $i$
+$$ \mu_i = \frac{\alpha_i}{\alpha_i + \beta_i}.$$
+Intuitively we would like to give an apriori higher weight to features with a larger sum $\alpha + \beta$, as for these situations there is more data. For each of the features and each of the observed cases we can locally weight the features with $\omega_i$,
+
+$$\omega_i = \frac{\alpha_i + \beta_i}{\sum_j (\alpha_j+\beta_j)}$$
+This can be combined into a function
+```{r}
+prepare_data <- function(df){
+  df <- add_map_parameters(df)
+  df <- add_faction_parameters(df)
+  df <- add_leader_parameters(df)
+  
+  df <- df %>% 
+          mutate(leader_mu = leader_alpha/(leader_alpha+leader_beta),
+                 faction_mu = faction_alpha/(faction_alpha+faction_beta),
+                 map_mu = map_alpha/(map_alpha + map_beta),
+                 leader_evid = leader_alpha + leader_beta,
+                 faction_evid = faction_alpha + faction_beta,
+                 map_evid = map_alpha + map_beta,
+                 sum_evid = leader_evid + faction_evid + map_evid,
+                 leader_evid = leader_evid/sum_evid,
+                 faction_evid = faction_evid/sum_evid,
+                 map_evid = map_evid/sum_evid)
+  
+  df <- add_elo_diff(df)
+  
+  df <- df %>% 
+          select(game_id, leader_mu, leader_evid, faction_mu, faction_evid,
+                 map_mu, map_evid, elo_diff)
+  return(df)
+}
+```
+
+```{r}
+train_set %>% 
+  head(10) %>% 
+  prepare_data()
+```
+
+
+### Training the Model

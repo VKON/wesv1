@@ -53,18 +53,23 @@ load_wesnoth <- function(path = 'data/Wesv15.csv', unit_data_path = './data'){
                date)
     
     elos <- winner_elos%>% 
-            bind_rows(loser_elos)
+            bind_rows(loser_elos) %>% 
+            mutate(elo = as.numeric(elo)) %>% 
+            distinct()
     
     two_player_game_ids <- game_info %>% 
         filter(num_players == 2) %>% 
         pull(game_id)
     
     two_player_games <- data %>% 
-            filter(game_id %in% two_player_game_ids) %>% 
-            group_by(game_id) %>% 
-            summarise(first_player_id = first(player_id),
-                      second_player_id = last(player_id),
-                      first_player_wins = if_else(first_player_id == first(winner_id), 1, 0))
+      select(game_id, player_id, winner_id) %>% 
+      filter(game_id %in% two_player_game_ids) %>% 
+      group_by(game_id) %>% 
+      summarise(first_player_id = first(player_id), 
+                second_player_id = last(player_id),
+                winner_id = first(winner_id)) %>% 
+      mutate(first_player_wins = if_else(first_player_id == winner_id, 1, 0)) %>% 
+      select(-winner_id)
     
     player_statistics_cols <- c('stats.cost', 
                                 'stats.inflicted_actual',
@@ -73,7 +78,7 @@ load_wesnoth <- function(path = 'data/Wesv15.csv', unit_data_path = './data'){
                                 'stats.taken_expected')
     
     player_game_statistics <- data %>% 
-        select(game_id, player_id, color, team, faction, leader,
+        select(game_id, player_id, color, team,number, faction, leader,
                cost = stats.cost,
                infliced_expected = stats.inflicted_expected,
                inflicted_actual = stats.inflicted_actual,
