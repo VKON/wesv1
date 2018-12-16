@@ -63,7 +63,8 @@ We can now calculate the the $\alpha$ and $\beta$ variables of the Beta distribu
 faction_cleaned <- faction_cleaned %>% 
   group_by(faction_factor) %>% 
   summarise(alpha = 1 + sum(faction_win), 
-            beta = 1 + n() - sum(faction_win))
+            beta = 1 + n() - sum(faction_win)) %>% 
+  ungroup()
 
 faction_cleaned %>% head()
 ```
@@ -126,7 +127,8 @@ leader_cleaned <- train_set %>%
                                  1-first_player_wins)) %>% 
   group_by(leader_factor) %>% 
   summarise(alpha = 1 + sum(leader_win),
-            beta = 1+n()-sum(leader_win))
+            beta = 1+n()-sum(leader_win)) %>% 
+  ungroup()
 
 leader_cleaned %>% head()
 ```
@@ -173,7 +175,8 @@ map_cleaned <- two_player_games %>%
   left_join(game_info %>% select(game_id, map), by = c('game_id')) %>% 
   group_by(map) %>% 
   summarise(alpha = 1+sum(first_player_wins, na.rm = T),
-            beta = 1+n()-sum(first_player_wins, na.rm = T))
+            beta = 1+n()-sum(first_player_wins, na.rm = T)) %>% 
+  ungroup()
 
 map_cleaned %>% head()
 ```
@@ -206,17 +209,39 @@ add_map_parameters <- function(df,
 Additionally we want to add the elo difference as a feature
 ```{r}
 add_elo_diff <- function(df, game_info_tbl = game_info, elo_tbl = elos){
+  
+  # Calculate the Median of all players as a default choice
+  median_elo <- elo_tbl %>% summarise(median_elo = median(elo)) %>% pull()
+  
+  # Create defaults by setting a very early date. This is the easiest to prevent 
+  #  Double counting
+  default_elos <- df %>% 
+       select(first_player_id, second_player_id) %>% 
+       gather(key = player_position, value = player_id) %>% 
+       select(player_id) %>% 
+       distinct() %>% 
+       mutate(player_id = factor(player_id),
+              elo = median_elo,
+              date = ymd_hms('1900-01-01 01:01:01'))
+
+  all_elos <- elos %>% 
+    group_by(player_id, date) %>% 
+    # Occasionally the same player has two elos for the same instance in time
+    # This prevents that
+    summarise(elo = median(elo)) %>% 
+    union_all(default_elos) %>% 
+    ungroup()
 
   df_with_features <- df %>%
     left_join(game_info_tbl %>% select(game_id, date) , by = c('game_id')) %>%
-    left_join(elo_tbl %>% rename(elo_date = date), by = c('first_player_id'='player_id')) %>%
+    left_join(all_elos %>% rename(elo_date = date), by = c('first_player_id'='player_id')) %>%
     group_by(game_id, first_player_id)%>%
     # Select for the latest Ranking
     filter(elo_date < date) %>%
     filter(elo_date == max(elo_date)) %>%
     rename(fp_elo = elo) %>%
     select(-elo_date) %>%
-    left_join(elo_tbl %>% rename(elo_date = date), by = c('second_player_id'='player_id')) %>%
+    left_join(all_elos %>% rename(elo_date = date), by = c('second_player_id'='player_id')) %>%
     group_by(game_id, second_player_id) %>%
     # Select for the latest Ranking
     filter(elo_date < date) %>%
@@ -230,7 +255,7 @@ add_elo_diff <- function(df, game_info_tbl = game_info, elo_tbl = elos){
   return(df_with_features)
 }
 ```
-
+This function looks for the latest elo numbers before the game. This way it is made certain that the outcome of the game has not have an influence on the elo number, and therefore constitutes as feature creep. If no elo number for at least one of the players is found, the difference is set to zero. It might be more sensible to instead substitute a median value for the missing players. 
 All the $\alpha$ and $\beta$ values are hard for a machine learning algorithm to learn. One way to help might be to transform the parameters into an average of the expected value for each feature; map, faction or leader; which is indexed by $i$
 $$ \mu_i = \frac{\alpha_i}{\alpha_i + \beta_i}.$$
 Intuitively we would like to give an apriori higher weight to features with a larger sum $\alpha + \beta$, as for these situations there is more data. For each of the features and each of the observed cases we can locally weight the features with $\omega_i$,
@@ -255,7 +280,11 @@ prepare_data <- function(df){
                  faction_evid = faction_evid/sum_evid,
                  map_evid = map_evid/sum_evid)
   
+
+  
   df <- add_elo_diff(df)
+  
+
   
   df <- df %>% 
           select(game_id, leader_mu, leader_evid, faction_mu, faction_evid,
@@ -264,7 +293,7 @@ prepare_data <- function(df){
 }
 ```
 
-```{r}
+```{r, warning = F}
 train_set %>% 
   head(10) %>% 
   prepare_data()
@@ -272,3 +301,35 @@ train_set %>%
 
 
 ### Training the Model
+
+A very simple model could be the averaged expectated values of the categorical inferences.
+```{r, warning = F, message=F}
+train_features <- train_set %>% 
+                prepare_data() %>% 
+                mutate(prediction = leader_mu*leader_evid + faction_mu*faction_evid + map_mu *  map_evid) %>% 
+                inner_join(train_set %>% select(game_id, first_player_wins) , by = c('game_id'))
+```
+
+```{r}
+auc(train_set$first_player_wins, train_features$prediction )
+```
+
+It seems that the pure aggregated feature is not that predictive.
+A simple model on the elo_diff might be better.
+
+```{r}
+elo_model <- train(factor(first_player_wins)~elo_diff, 
+                   method = 'glm', 
+                   family = 'binomial',
+                   data = train_features)
+```
+Let us see how predictions work on an unseen test set.
+```{r, message = F}
+test_features <- test_set %>% 
+                    prepare_data()
+test_features$prediction <- predict(elo_model, newdata = test_features, type = 'prob')[,2]
+```
+```{r}
+auc(test_set$first_player_wins, test_features$prediction)
+```
+The elo diff is much more predictive on unseen data! If we combine these, we might be able to get stronger predictive performance.
