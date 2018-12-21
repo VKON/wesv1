@@ -45,7 +45,7 @@ aug_games <-  train_set %>%
     rename(sp_faction = faction, sp_leader = leader)
 
 faction_cleaned <- aug_games  %>% 
-    # Order the factors alphabetically, this way more data per faction is obtained  
+    # Order the factors alphbetically, this way more data per faction is obtained  
     mutate(factor_relation = as.character(fp_faction) <= as.character(sp_faction)) %>% 
     mutate(faction_factor = if_else(factor_relation, 
                                   str_c(fp_faction,' - ', sp_faction),
@@ -58,12 +58,13 @@ faction_cleaned <- aug_games  %>%
 faction_cleaned %>% head()
 ```
 
-We can now calculate the the $\alpha$ and $\beta$ variables of the Beta distribution. We assume a maximum entropy prior and therefore choose $\alpha_0 = \beta_0 = 1$
+We can now calculate the the $\alpha$ and $\beta$ variables of the bet distribution. We assume a maximum entropy prior and therefore choose $\alpha_0 = \beta_0 = 1$
 ```{r}
 faction_cleaned <- faction_cleaned %>% 
   group_by(faction_factor) %>% 
-  summarise(alpha = 1 + sum(faction_win), 
-            beta = 1 + n() - sum(faction_win))
+  summarise(alph = 1 + sum(faction_win), 
+            bet = 1 + n() - sum(faction_win)) %>% 
+  ungroup()
 
 faction_cleaned %>% head()
 ```
@@ -94,12 +95,12 @@ add_faction_parameters <- function(df,
                                       str_c(fp_faction,' - ', sp_faction),
                                       str_c(sp_faction,' - ', fp_faction))) %>% 
     left_join(faction_lookup, on ='faction_factor') %>% 
-    mutate(faction_alpha = if_else(faction_relation, alpha, beta),
-           faction_beta = if_else(faction_relation, beta, alpha)) %>% 
+    mutate(faction_alph = if_else(faction_relation, alph, bet),
+           faction_bet = if_else(faction_relation, bet, alph)) %>% 
     # Set default values
-    mutate(faction_alpha = if_else(is.na(faction_alpha), 1, faction_alpha),
-           faction_beta = if_else(is.na(faction_beta), 1, faction_beta)) %>% 
-    select(-c(alpha,beta,fp_faction, sp_faction, faction_relation, faction_factor ))
+    mutate(faction_alph = if_else(is.na(faction_alph), 1, faction_alph),
+           faction_bet = if_else(is.na(faction_bet), 1, faction_bet)) %>% 
+    select(-c(alph,bet,fp_faction, sp_faction, faction_relation, faction_factor ))
   return(df)
 }
 ```
@@ -125,8 +126,9 @@ leader_cleaned <- train_set %>%
                                  first_player_wins,
                                  1-first_player_wins)) %>% 
   group_by(leader_factor) %>% 
-  summarise(alpha = 1 + sum(leader_win),
-            beta = 1+n()-sum(leader_win))
+  summarise(alph = 1 + sum(leader_win),
+            bet = 1+n()-sum(leader_win)) %>% 
+  ungroup()
 
 leader_cleaned %>% head()
 ```
@@ -157,12 +159,12 @@ add_leader_parameters <- function(df,
                                       str_c(fp_leader,' - ', sp_leader),
                                       str_c(sp_leader,' - ', fp_leader))) %>% 
     left_join(leader_lookup, on ='leader_factor') %>% 
-    mutate(leader_alpha = if_else(leader_relation, alpha, beta),
-           leader_beta = if_else(leader_relation, beta, alpha)) %>% 
+    mutate(leader_alph = if_else(leader_relation, alph, bet),
+           leader_bet = if_else(leader_relation, bet, alph)) %>% 
     # Set default values
-    mutate(leader_alpha = if_else(is.na(leader_alpha), 1, leader_alpha),
-           leader_beta = if_else(is.na(leader_beta), 1, leader_beta)) %>% 
-    select(-c(alpha,beta,fp_leader, sp_leader, leader_relation, leader_factor ))
+    mutate(leader_alph = if_else(is.na(leader_alph), 1, leader_alph),
+           leader_bet = if_else(is.na(leader_bet), 1, leader_bet)) %>% 
+    select(-c(alph,bet,fp_leader, sp_leader, leader_relation, leader_factor ))
   return(df)
 }
 ```
@@ -172,8 +174,9 @@ Next we do a similar thing for the maps. We group by map and who has the first m
 map_cleaned <- two_player_games %>% 
   left_join(game_info %>% select(game_id, map), by = c('game_id')) %>% 
   group_by(map) %>% 
-  summarise(alpha = 1+sum(first_player_wins, na.rm = T),
-            beta = 1+n()-sum(first_player_wins, na.rm = T))
+  summarise(alph = 1+sum(first_player_wins, na.rm = T),
+            bet = 1+n()-sum(first_player_wins, na.rm = T)) %>% 
+  ungroup()
 
 map_cleaned %>% head()
 ```
@@ -193,12 +196,12 @@ add_map_parameters <- function(df,
   
   df <- df %>% 
     left_join(map_lookup, by =c('map'))%>%
-    mutate(map_alpha = alpha,
-           map_beta = beta) %>%
+    mutate(map_alph = alph,
+           map_bet = bet) %>%
     # Set default values
-    mutate(map_alpha = if_else(is.na(map_alpha), 1, map_alpha),
-           map_beta = if_else(is.na(map_beta), 1, map_beta)) %>%
-    select(-c(alpha,beta ))
+    mutate(map_alph = if_else(is.na(map_alph), 1, map_alph),
+           map_bet = if_else(is.na(map_bet), 1, map_bet)) %>%
+    select(-c(alph,bet ))
   return(df)
 }
 ```
@@ -206,17 +209,39 @@ add_map_parameters <- function(df,
 Additionally we want to add the elo difference as a feature
 ```{r}
 add_elo_diff <- function(df, game_info_tbl = game_info, elo_tbl = elos){
+  
+  # Calculate the Median of all players as a default choice
+  median_elo <- elo_tbl %>% summarise(median_elo = median(elo)) %>% pull()
+  
+  # Create defaults by setting a very early date. This is the easiest to prevent 
+  #  Double counting
+  default_elos <- df %>% 
+       select(first_player_id, second_player_id) %>% 
+       gather(key = player_position, value = player_id) %>% 
+       select(player_id) %>% 
+       distinct() %>% 
+       mutate(player_id = factor(player_id),
+              elo = median_elo,
+              date = ymd_hms('1900-01-01 01:01:01'))
+
+  all_elos <- elos %>% 
+    group_by(player_id, date) %>% 
+    # Occasionally the same player has two elos for the same instance in time
+    # This prevents that
+    summarise(elo = median(elo)) %>% 
+    union_all(default_elos) %>% 
+    ungroup()
 
   df_with_features <- df %>%
     left_join(game_info_tbl %>% select(game_id, date) , by = c('game_id')) %>%
-    left_join(elo_tbl %>% rename(elo_date = date), by = c('first_player_id'='player_id')) %>%
+    left_join(all_elos %>% rename(elo_date = date), by = c('first_player_id'='player_id')) %>%
     group_by(game_id, first_player_id)%>%
     # Select for the latest Ranking
     filter(elo_date < date) %>%
     filter(elo_date == max(elo_date)) %>%
     rename(fp_elo = elo) %>%
     select(-elo_date) %>%
-    left_join(elo_tbl %>% rename(elo_date = date), by = c('second_player_id'='player_id')) %>%
+    left_join(all_elos %>% rename(elo_date = date), by = c('second_player_id'='player_id')) %>%
     group_by(game_id, second_player_id) %>%
     # Select for the latest Ranking
     filter(elo_date < date) %>%
@@ -230,12 +255,14 @@ add_elo_diff <- function(df, game_info_tbl = game_info, elo_tbl = elos){
   return(df_with_features)
 }
 ```
-
+This function looks for the latest elo numbers before the game. This way it is made certain that the outcome of the game has not have an influence on the elo number, and therefore constitutes as feature creep. If no elo number for at least one of the players is found, the difference is set to zero. It might be more sensible to instead substitute a median value for the missing players. 
 All the $\alpha$ and $\beta$ values are hard for a machine learning algorithm to learn. One way to help might be to transform the parameters into an average of the expected value for each feature; map, faction or leader; which is indexed by $i$
 $$ \mu_i = \frac{\alpha_i}{\alpha_i + \beta_i}.$$
 Intuitively we would like to give an apriori higher weight to features with a larger sum $\alpha + \beta$, as for these situations there is more data. For each of the features and each of the observed cases we can locally weight the features with $\omega_i$,
 
 $$\omega_i = \frac{\alpha_i + \beta_i}{\sum_j (\alpha_j+\beta_j)}$$
+
+
 This can be combined into a function
 ```{r}
 prepare_data <- function(df){
@@ -244,18 +271,22 @@ prepare_data <- function(df){
   df <- add_leader_parameters(df)
   
   df <- df %>% 
-          mutate(leader_mu = leader_alpha/(leader_alpha+leader_beta),
-                 faction_mu = faction_alpha/(faction_alpha+faction_beta),
-                 map_mu = map_alpha/(map_alpha + map_beta),
-                 leader_evid = leader_alpha + leader_beta,
-                 faction_evid = faction_alpha + faction_beta,
-                 map_evid = map_alpha + map_beta,
+          mutate(leader_mu = leader_alph/(leader_alph+leader_bet),
+                 faction_mu = faction_alph/(faction_alph+faction_bet),
+                 map_mu = map_alph/(map_alph + map_bet),
+                 leader_evid = leader_alph + leader_bet,
+                 faction_evid = faction_alph + faction_bet,
+                 map_evid = map_alph + map_bet,
                  sum_evid = leader_evid + faction_evid + map_evid,
                  leader_evid = leader_evid/sum_evid,
                  faction_evid = faction_evid/sum_evid,
                  map_evid = map_evid/sum_evid)
   
+
+  
   df <- add_elo_diff(df)
+  
+
   
   df <- df %>% 
           select(game_id, leader_mu, leader_evid, faction_mu, faction_evid,
@@ -264,7 +295,7 @@ prepare_data <- function(df){
 }
 ```
 
-```{r}
+```{r, warning = F}
 train_set %>% 
   head(10) %>% 
   prepare_data()
@@ -272,3 +303,158 @@ train_set %>%
 
 
 ### Training the Model
+
+A very simple model could be the averaged expectated values of the categorical inferences.
+```{r, warning = F, message=F}
+train_features <- train_set %>% 
+                prepare_data() %>% 
+                mutate(prediction = leader_mu*leader_evid + faction_mu*faction_evid + map_mu *  map_evid) %>% 
+                inner_join(train_set %>% select(game_id, first_player_wins) , by = c('game_id'))
+```
+
+```{r}
+auc(train_set$first_player_wins, train_features$prediction )
+```
+
+It seems that the pure aggregated feature is not that predictive.
+A simple model on the elo_diff might be better.
+
+```{r}
+elo_model <- train(factor(first_player_wins)~elo_diff, 
+                   method = 'glm', 
+                   family = 'binomial',
+                   data = train_features)
+```
+Let us see how predictions work on an unseen test set.
+```{r, message = F, warning = F}
+test_features <- test_set %>% 
+                    prepare_data()
+test_features$prediction <- predict(elo_model, newdata = test_features, type = 'prob')[,2]
+```
+```{r}
+auc(test_set$first_player_wins, test_features$prediction)
+```
+The elo diff is much more predictive on unseen data! If we combine these, we might be able to get stronger predictive performance. 
+
+We can try to improve the model by using a different ML algorithm,xg-boost. First we generate a data partition of the train set, so we can tune the model parameters via cross-validation.
+```{r}
+train_features <- train_features %>% 
+  select(-prediction, -game_id ) %>%
+  mutate(first_player_wins = factor(first_player_wins))
+
+cv_idx <- createFolds(train_features$first_player_wins, k = 5)
+```
+And a train control object
+```{r}
+train_control <- trainControl(
+  method = "cv",
+  index = cv_idx,
+  verboseIter = FALSE,
+  allowParallel = TRUE
+)
+```
+
+For the initial training, we can choose a parameter set
+```{r}
+train_grid <- expand.grid(
+  nrounds = 1000,
+  max_depth = 6,
+  eta = 0.1,
+  gamma = 0,
+  colsample_bytree = 1,
+  min_child_weight = 1,
+  subsample = 1
+)
+```
+After training we can check that the model outperforms the elo-only set.
+```{r}
+xgb_model <- train(first_player_wins ~ .,
+                  method = 'xgbTree',
+                  data = train_features,
+                  tuneGrid = train_grid,
+                  trControl = train_control,
+                  verbose = T)
+```
+```{r}
+predictions <- predict(xgb_model, newdata = test_features, type = 'prob')[,2]
+auc(test_set$first_player_wins, predictions)
+```
+Clearly an improvement!
+We can try to improve performance a little bit by tuning the different variables. There is a wonderful notebook [here](https://www.kaggle.com/pelkoja/visual-xgboost-tuning-with-caret) that contains a useful function to graphically show the tuning process.
+
+```{r}
+tuneplot <- function(x, probs = .90) {
+  ggplot(x) +
+    coord_cartesian(ylim = c(quantile(x$results$Accuracy, probs = probs), min(x$results$Accuracy))) +
+    theme_bw()
+}
+```
+```{r}
+train_grid2 <- expand.grid(
+  nrounds = seq(from = 200, to = 1000, by = 50),
+  max_depth = c(2, 3, 4, 5, 6),
+  eta = c(0.025, 0.05, 0.1, 0.3, 0.5),
+  gamma = 0,
+  colsample_bytree = 1,
+  min_child_weight = 1,
+  subsample = 1
+)
+```
+```{r}
+xgb_model2 <- train(first_player_wins ~ .,
+                  method = 'xgbTree',
+                  data = train_features,
+                  tuneGrid = train_grid2,
+                  trControl = train_control,
+                  verbose = T)
+```
+
+```{r}
+tuneplot(xgb_model2)
+```
+The output does not work. But it seems that overfitting already happened, so it makes sense to look for simpler models.
+
+```{r}
+predictions <- predict(xgb_model2, newdata = test_features, type = 'prob')[,2]
+auc(test_set$first_player_wins, predictions)
+```
+```{r}
+train_grid3 <- expand.grid(
+  nrounds = seq(from = 10, to = 1000, by = 10),
+  max_depth = c(1, 2, 3),
+  eta = c(0.01,0.025),
+  gamma = 0,
+  colsample_bytree = 1,
+  min_child_weight = 1,
+  subsample = 1
+)
+```
+```{r}
+xgb_model3 <- train(first_player_wins ~ .,
+                  method = 'xgbTree',
+                  data = train_features,
+                  tuneGrid = train_grid3,
+                  trControl = train_control,
+                  verbose = T)
+```
+```{r}
+predictions <- predict(xgb_model3, newdata = test_features, type = 'prob')[,2]
+auc(test_set$first_player_wins, predictions)
+```
+Performance has not really improved.
+The fact that the tuning prefers the shallowest models and works better at very slow learning rates suggests that the features are already pretty informative as they are and model finetuning will not improve that so much.
+Interestingly, when training a simple logistic regression, we get a similar performance.
+```{r}
+lr_model <- train(factor(first_player_wins) ~ .,
+             data      = train_features    ,
+             method    = "glm"    ,
+             family    = binomial ,
+             trControl = tc)
+predictions <- predict(fit, newdata = test_features, type = 'prob')[,2]
+auc(test_set$first_player_wins, predictions)
+```
+From the summary it is clear that the $mu$ values are made good use of, whereas the evidences are more or less completely neglected (not sure where the `NA`s come from).
+```{r}
+summary(lr_model)
+```
+
