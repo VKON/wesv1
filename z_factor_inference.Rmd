@@ -1,6 +1,6 @@
 ---
 title: "Inference on Categorical Variables"
-output: html_notebook
+output: html_document
 ---
 
 Load libraries and data
@@ -392,8 +392,8 @@ tuneplot <- function(x, probs = .90) {
 ```{r}
 train_grid2 <- expand.grid(
   nrounds = seq(from = 200, to = 1000, by = 50),
-  max_depth = c(2, 3, 4, 5, 6),
-  eta = c(0.025, 0.05, 0.1, 0.3, 0.5),
+  max_depth = c(2, 3, 4),
+  eta = c(0.025, 0.05, 0.1),
   gamma = 0,
   colsample_bytree = 1,
   min_child_weight = 1,
@@ -438,22 +438,26 @@ xgb_model3 <- train(first_player_wins ~ .,
                   verbose = T)
 ```
 ```{r}
+tuneplot(xgb_model3)
+```
+
+```{r}
 predictions <- predict(xgb_model3, newdata = test_features, type = 'prob')[,2]
 auc(test_set$first_player_wins, predictions)
 ```
 Performance has not really improved.
 The fact that the tuning prefers the shallowest models and works better at very slow learning rates suggests that the features are already pretty informative as they are and model finetuning will not improve that so much.
 Interestingly, when training a simple logistic regression, we get a similar performance.
-```{r}
+```{r, warning = F, message = F}
 lr_model <- train(factor(first_player_wins) ~ .,
              data      = train_features    ,
              method    = "glm"    ,
              family    = binomial ,
-             trControl = tc)
-predictions <- predict(fit, newdata = test_features, type = 'prob')[,2]
+             trControl = train_control)
+predictions <- predict(lr_model, newdata = test_features, type = 'prob')[,2]
 auc(test_set$first_player_wins, predictions)
 ```
-From the summary it is clear that the $mu$ values are made good use of, whereas the evidences are more or less completely neglected (not sure where the `NA`s come from).
+From the summary it is clear that the $\mu$ values are made good use of, whereas the evidences are more or less completely neglected (not sure where the `NA`s come from).
 ```{r}
 summary(lr_model)
 ```
