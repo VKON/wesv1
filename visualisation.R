@@ -78,3 +78,44 @@ leader_statistics%>%
           plot.subtitle = element_text(size = 8),
           axis.text.x = element_text(angle = 90),
           panel.border = element_blank(), panel.grid= element_blank())
+
+# Test significance of faction asymmetry
+
+two_player_games %>% 
+  mutate(fold = row_number()%%10) %>% 
+  left_join(game_factions, 
+            by =c('game_id' = 'game_id','first_player_id'='player_id') ) %>% 
+  rename(first_faction = faction) %>% 
+  left_join(game_factions, 
+            by =c('game_id' = 'game_id','second_player_id'='player_id') ) %>% 
+  rename(second_faction = faction) %>% 
+  group_by(fold, first_faction, second_faction) %>% 
+  summarise(alph = 1+sum(first_player_wins),
+            bet = 1+ n()-sum(first_player_wins)) %>% 
+  mutate(lwr_p50 = qbeta(0.25, alph, bet),
+         upr_p50 = qbeta(0.75, alph, bet),
+         lwr_p80 = qbeta(0.1, alph, bet),
+         upr_p80 = qbeta(0.9, alph, bet),
+         lwr_p90 = qbeta(0.05, alph, bet),
+         upr_p90 = qbeta(0.95, alph, bet)) %>% 
+  mutate(in_p50 = if_else(0.5 >= lwr_p50 & 0.5 <= upr_p50, 1, 0),
+         in_p80 = if_else(0.5 >= lwr_p80 & 0.5 <= upr_p80, 1, 0),
+         in_p90 = if_else(0.5 >= lwr_p90 & 0.5 <= upr_p90, 1, 0)) %>% 
+  group_by(fold) %>% 
+  summarise(rate_in_50 = mean(in_p50),
+            rate_in_80 = mean(in_p80),
+            rate_in_90 = mean(in_p90)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = fold)) +
+    geom_line(aes(y = rate_in_50), color = 'red')+
+    geom_hline(yintercept = 0.5, color = 'red', linetype = 2)+
+    geom_line(aes(y = rate_in_80), color = 'blue')+
+    geom_hline(yintercept = 0.8, color = 'blue', linetype = 2)+
+    geom_line(aes(y = rate_in_90), color = 'violet')+
+    geom_hline(yintercept = 0.9, color = 'violet', linetype = 2)+
+    scale_y_continuous('Mean Occurence of p= 0.5', limits = c(0,1))+
+    scale_x_continuous('Data Fold')+
+    ggtitle('Occurance of p = 0.5 in plausible intervals', 
+            subtitle = 'Empirical occurance consistently too low')+
+    theme_bw()
+
