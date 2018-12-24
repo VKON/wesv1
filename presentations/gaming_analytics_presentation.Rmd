@@ -1,0 +1,233 @@
+---
+title: "Winning the Battle for Wesnoth"
+author: Viktor Konakovsky & Arvid Kingl
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r, echo=F, warning=F, message=F}
+setwd('~/wesv1/')
+library(caret)
+source('tidy_data.R')
+load_wesnoth()
+data <- read_csv('data/Wesv15.csv')
+set.seed(123)
+```
+
+## Battle for Wesnoth
+
+```{r, out.width='400px'}
+knitr::include_graphics("~/wesv1/presentations/battle_of_wesnoth_screen.png")
+```
+
+
+- Turn-based Strategy
+- Open-sourced and runs on all OS (even Linux!)
+- Continuous Development and Evolution
+
+## Game Background
+
+- There are `r nrow(unit_data$unit_basic)` different units spread over `r nrow(player_game_statistics %>% select(faction) %>% distinct())` factions on `r nrow(game_info %>% select(map) %>% distinct())` maps
+
+
+- Combat contains random elements
+
+- 17 official campaigns, more self-made ones and plenty of lore for the fanboys 
+
+<center>
+```{r, out.width='150px'}
+knitr::include_graphics("~/wesv1/presentations/wesnoth_sylph.png")
+```
+</center>
+## The Data Set
+
+- 4.5GB of JSON events
+- `r nrow(two_player_games)` individual games 
+- `r nrow(player_lookup)` individual players
+- For analysis, only meta data was used
+- Data needed a little tidying
+```{r, echo=F}
+data[seq(1, 6), seq(30, 35)]
+```
+
+## Questions
+
+- Are the faction choices meaningful?
+- Is the starting position meaningful?
+- What are good strategies?
+
+## Questions
+
+- **Are the faction choices meaningful?**
+- **Is the starting position meaningful?**
+- What are good strategies?
+
+## Factions 
+
+- Each Player chooses a faction
+- Calculate adjusted win ratio for fair coin flips with $M$ positive outcomes
+
+$$ z = \frac{M - <M>}{\sigma_M} = \frac{2M - N}{\sqrt{N}}   $$
+- In principle hierarchical extension to leaders
+
+##
+<left>
+
+```{r, echo = F, fig.height=5.5}
+# To find which faction which player used in which game
+game_factions <- player_game_statistics %>% 
+    select(game_id, player_id, faction)
+
+# Map on each game
+map_lookup <- game_info %>%
+    select(game_id, map)
+
+
+# Generate statistics
+faction_statistics <- two_player_games %>% 
+    left_join(game_factions, 
+              by =c('game_id' = 'game_id','first_player_id'='player_id') ) %>% 
+    rename(first_faction = faction) %>% 
+    left_join(game_factions, 
+              by =c('game_id' = 'game_id','second_player_id'='player_id') ) %>% 
+    rename(second_faction = faction) %>% 
+    group_by( first_faction, second_faction) %>% 
+    summarise(wins = sum(first_player_wins),
+              total_games = n()) %>% 
+    mutate(win_ratio = wins/total_games,
+           dist_to_fair = win_ratio - 0.5,
+    # Variance of Bernoulli = N*p*(1-p), for fair coin sigma = sqrt(N)
+           adjust_dist_to_fair = 2*(wins - 0.5*total_games)/sqrt(total_games))
+
+faction_plot <- faction_statistics %>% 
+    ggplot(aes(y = first_faction, x = second_faction, fill = adjust_dist_to_fair))+
+        geom_tile() +
+        scale_fill_gradient2('Adj. Win Ratio',high = 'red', low = 'blue', mid = 'white')+
+        coord_equal()+
+        labs(x = '', y='')+
+        theme_bw()+
+        ggtitle('Certain Factions overpower others', 
+              subtitle = 'Note the asymmetry across the diagonal')+
+        theme(text = element_text(family = 'Futura Std Medium'), 
+              plot.subtitle = element_text(size = 8),
+              axis.text.x = element_text(angle = 90),
+              panel.border = element_blank(), panel.grid= element_blank())
+faction_plot
+```
+</left>
+- There are rock-paper-scissor relations such as 
+Loyalists > Knalgan Alliance > Undead > Loyalists
+
+
+## Testing the Assumptions
+
+- Infer the probability distribution of the base probability of each group.
+- Beta distribution $$ Beta(x, \alpha, \beta) = \frac{1}{B(\alpha, \beta)} = x^{\alpha -1} (1-x)^{\beta - 1} $$
+
+<center>
+```{r, out.width='250px'}
+knitr::include_graphics("~/wesv1/presentations/beta_distributions.png")
+```
+</center>
+
+- Larger $\alpha$ and $\beta$ means narrower distributions
+
+##
+- Empirically estimate parameters for each group as $\alpha = M + 1$ and $\beta = N-M + 1$, then calculate plausible intervals
+
+
+```{r, echo = F}
+M_value <- 35
+N_value <- 60
+alpha_value <- M_value + 1
+beta_value <- N_value - M_value + 1
+x_axis <- seq(0,1,0.0001)
+distribution <- dbeta(x_axis, alpha_value, beta_value)
+
+p50_interval <- c(qbeta(0.25,alpha_value, beta_value), qbeta(0.75,alpha_value, beta_value))
+p80_interval <-  c(qbeta(0.10,alpha_value, beta_value), qbeta(0.9,alpha_value, beta_value))
+p90_interval <- c(qbeta(0.05,alpha_value, beta_value), qbeta(0.95,alpha_value, beta_value))
+ggplot()+
+  geom_line(aes(x = x_axis, y = distribution))+
+  geom_line(aes(x = p90_interval, y = 0), color = 'violet', size = 3, alpha = 0.7)+
+  geom_line(aes(x = p80_interval, y = 0), color = 'blue', size = 3, alpha = 0.7)+
+  geom_line(aes(x = p50_interval, y = 0), color = 'red', size = 3, alpha = 0.7)+
+  scale_x_continuous('Probability', limits = c(0,1), breaks = c(0, 0.5, 1))+
+  geom_point(aes(x = 0.5, y = 0), shape = 4, size = 6) +
+  ggtitle(str_c('Plausible interval for ', M_value, ' wins in ', N_value, ' games'))+
+  theme_bw()+
+  theme( axis.line.y = element_blank(), 
+         axis.ticks.y = element_blank(),
+         axis.title.y = element_blank(),
+         axis.text.y = element_blank())
+
+```
+
+
+##
+
+- In about 50% of cases p=0.5 should be in 50% likelihood interval, 80% in 80% likelihood interval, ... (Data Folds allow for natural variation)
+
+
+```{r, echo = F, fig.height=5}
+
+two_player_games %>% 
+  mutate(fold = row_number()%%10) %>% 
+  left_join(game_factions, 
+            by =c('game_id' = 'game_id','first_player_id'='player_id') ) %>% 
+  rename(first_faction = faction) %>% 
+  left_join(game_factions, 
+            by =c('game_id' = 'game_id','second_player_id'='player_id') ) %>% 
+  rename(second_faction = faction) %>% 
+  group_by(fold, first_faction, second_faction) %>% 
+  summarise(alph = 1+sum(first_player_wins, na.rm = T),
+            bet = 1+ n()-sum(first_player_wins, na.rm = T)) %>% 
+  mutate(lwr_p50 = qbeta(0.25, alph, bet),
+         upr_p50 = qbeta(0.75, alph, bet),
+         lwr_p80 = qbeta(0.1, alph, bet),
+         upr_p80 = qbeta(0.9, alph, bet),
+         lwr_p90 = qbeta(0.05, alph, bet),
+         upr_p90 = qbeta(0.95, alph, bet)) %>% 
+  mutate(in_p50 = if_else(0.5 >= lwr_p50 & 0.5 <= upr_p50, 1, 0),
+         in_p80 = if_else(0.5 >= lwr_p80 & 0.5 <= upr_p80, 1, 0),
+         in_p90 = if_else(0.5 >= lwr_p90 & 0.5 <= upr_p90, 1, 0)) %>% 
+  group_by(fold) %>% 
+  summarise(rate_in_50 = mean(in_p50),
+            rate_in_80 = mean(in_p80),
+            rate_in_90 = mean(in_p90)) %>% 
+  ungroup() %>% 
+  ggplot(aes(x = fold)) +
+    geom_line(aes(y = rate_in_50), color = 'red')+
+    geom_hline(yintercept = 0.5, color = 'red', linetype = 2)+
+    geom_line(aes(y = rate_in_80), color = 'blue')+
+    geom_hline(yintercept = 0.8, color = 'blue', linetype = 2)+
+    geom_line(aes(y = rate_in_90), color = 'violet')+
+    geom_hline(yintercept = 0.9, color = 'violet', linetype = 2)+
+    scale_y_continuous('Mean Occurence of p= 0.5', limits = c(0,1))+
+    scale_x_continuous('Data Fold')+
+    theme_bw()
+
+```
+
+## Faction-Leader Hierarchies
+
+- L1 feature importance suggests that factions are more impactful than leaders
+- Big bands are faction combinations, sub-bands are leader combinations
+<center>
+```{r, echo = F, out.height='250px'}
+knitr::include_graphics("~/wesv1/presentations/hierarchies.png")
+```
+</center>
+
+- Leaders are not exact subset of factions
+
+## Modeling
+
+- Built symmetrised features for factions, leaders, and map position 
+- Added retroed elo difference (strongest feature)
+- Logistic Regression as good as xgboost
+- Shallow trees with few interactions, but uplift due to categorical features
+- AUC of 0.74 and accuracy of 70% on unseen test data
