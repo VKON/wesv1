@@ -258,12 +258,22 @@ all_names <- base_page %>%
     unlist()
 all_names <- all_names[all_names!='']
 
+
 unit_pictures <- tibble('name'=all_names, 'img_url' = img_urls) %>% 
     mutate(clean_name = str_to_lower(name),
-           clean_name = str_replace(clean_name, ' ', '_'))
+           clean_name = str_replace(clean_name, ' ', '_')) 
 
-download.file(img_urls[1],'data/unit_images/blood_bat.png')
+# Extract faction
+basic_name <- or(one_or_more(WRD), one_or_more(WRD) %R% '-' %R% one_or_more(WRD))
+faction_pattern <- '24units%24' %R% capture(basic_name) %R% '%24'
 
-load_image <- function(name, url){
-    download.file(url,str_c('data/unit_images/',name, '.png'))
-}
+unit_pictures <- unit_pictures %>% 
+  mutate(faction = factor(str_match(img_url,faction_pattern)[,2]))
+
+write_csv(unit_pictures, path = 'data/unit_images.csv')  
+
+# download.file(img_urls[1],'data/unit_images/blood_bat.png')
+
+# load_image <- function(name, url){
+#     download.file(url,str_c('data/unit_images/',name, '.png'))
+# }
