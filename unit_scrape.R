@@ -29,7 +29,7 @@ extract_description_text <- function(html_page){
     return(flavour_text)
 }
 
-extract_description_text(sample_html)
+
 
 clean_name <- function(name_string){
     name_string %>% 
@@ -239,7 +239,31 @@ unit_movement_info <- unit_movement_info %>%
     left_join(unit_lookup, by = 'unit') %>% 
     select(-unit)
 
-write_csv(unit_basic_info, path = 'unit_basic.csv')
-write_csv(unit_attack_info, path = 'unit_attack.csv')
-write_csv(unit_movement_info, path = 'unit_movement.csv')
-write_csv(unit_resistance_info, path = 'unit_resistance.csv')
+write_csv(unit_basic_info, path = 'data/unit_basic.csv')
+write_csv(unit_attack_info, path = 'data/unit_attack.csv')
+write_csv(unit_movement_info, path = 'data/unit_movement.csv')
+write_csv(unit_resistance_info, path = 'data/unit_resistance.csv')
+
+# Load factions and pictures
+base_page <- read_html(base_url)
+all_img_urls <- base_page %>% 
+    html_nodes('td.unitcell') %>% 
+    html_nodes('img') %>% 
+    html_attr('src')
+img_urls <- str_replace(all_img_urls, '../..', 'https://units.wesnoth.org/1.14')
+
+all_names <- base_page %>% 
+    html_nodes('td.unitcell a') %>% 
+    html_text() %>% 
+    unlist()
+all_names <- all_names[all_names!='']
+
+unit_pictures <- tibble('name'=all_names, 'img_url' = img_urls) %>% 
+    mutate(clean_name = str_to_lower(name),
+           clean_name = str_replace(clean_name, ' ', '_'))
+
+download.file(img_urls[1],'data/unit_images/blood_bat.png')
+
+load_image <- function(name, url){
+    download.file(url,str_c('data/unit_images/',name, '.png'))
+}
