@@ -193,3 +193,61 @@ hierarchy_plot <- plot(fit)
 png('~/wesv1/presentations/hierarchies.png')
 plot(fit)
 dev.off()
+
+# A trelliscope for the Unit Data
+library(tidyverse)
+library(trelliscopejs)
+unit_images <- read_csv('data/unit_images.csv') 
+unit_basic <- read_csv('data/unit_basic.csv') %>% distinct()
+
+
+unit_attack <- read_csv('data/unit_attack.csv') %>% 
+                  distinct() %>% 
+                  mutate(total_damage = att_damage*att_count,
+                         description = str_c(att_name,': ', 
+                                             att_type, ' ', att_count, 
+                                             'x', att_damage, ' (', att_category,')')) %>% 
+                  select(-special1, -special2) %>% 
+                  group_by(unit_id) %>% 
+                  mutate(attack_num = row_number()) %>% 
+                  ungroup()
+
+first_attacks <- unit_attack %>% 
+              filter(attack_num == 1)
+second_attacks <- unit_attack %>% 
+  filter(attack_num == 2)
+tert_attacks <- unit_attack %>% 
+  filter(attack_num == 3)
+colnames(tert_attacks) <- str_c(colnames(tert_attacks), '_tert')
+
+all_attacks <- first_attacks %>% 
+  left_join(second_attacks, by = 'unit_id', suffix=c('_prim','_second'))
+
+all_attacks <- all_attacks %>% 
+  left_join(tert_attacks, by = c('unit_id'='unit_id_tert'))
+
+unit_resistances <- read_csv('data/unit_resistance.csv') %>% 
+                  group_by(unit_id) %>% 
+                  distinct() %>% 
+                  spread(key = 'category', value = 'percentage')
+colnames(unit_resistances) <- str_c('resistance_', colnames(unit_resistances))
+
+
+trellis <- unit_images %>%  
+  distinct() %>% 
+  left_join(unit_basic, by = c('clean_name'='unit')) %>% 
+  left_join(unit_resistances, by = c('unit_id'='resistance_unit_id')) %>%
+  left_join(all_attacks, by = c('unit_id'='unit_id')) %>% 
+  mutate(name = cog(name, default_active = T),
+         faction = cog(faction, default_active = T),
+         alignment = cog(alignment, default_active = T),
+         img_url = cog(img_url, default_active = F),
+         hp = cog(hp, default_active = T),
+         cost = cog(cost, default_active = T),
+         panel = img_panel(img_url),
+         description_prim = cog(description_prim, desc = 'Primary Attack', default_active = T),
+         description_second = cog(description_second, desc = 'Secondary Attack', default_active = T),
+         description_tert = cog(description_prim, desc = 'Tertiary Attack', default_active = T)) %>% 
+  trelliscope(name = 'Unit Explorer', nrow = 1, ncol = 3, width = 1000)
+
+
