@@ -53,6 +53,69 @@ knitr::include_graphics("~/wesv1/presentations/wesnoth_sylph.png")
 data[seq(1, 6), seq(30, 35)]
 ```
 
+## An overview
+
+```{r}
+game_info %>%
+  mutate(year = year(date), month = month(date)) %>% 
+  group_by(year, month) %>% 
+  summarise(num_games = n()) %>% 
+  mutate(year_month = as.Date(ISOdate(year, month, 1)))%>% 
+  ggplot(aes(x = year_month, y = num_games)) +
+    geom_line() +
+    scale_x_date('Year') + 
+    scale_y_continuous('Monthly Games') +
+    ggtitle('Tournament Games of Wesnoth over time')+
+    theme_bw()
+```
+
+## An overview (cont)
+
+```{r}
+game_info %>%
+  mutate(weekday = factor(wday(date))) %>% 
+  group_by(weekday) %>% 
+  summarise(number = n()) %>% 
+  ungroup() %>% 
+  mutate(fraction = number/sum(number)) %>% 
+  ggplot(aes(x = factor(weekday), y = fraction)) +
+    geom_bar(stat = 'identity', fill = 'lightblue') +
+    theme_bw() +
+    scale_y_continuous('Fraction') +
+    scale_x_discrete('Weekday',
+                     labels = c('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'))+
+    ggtitle('Relatively little influence of day of the week')
+```
+
+## An overview (cont)
+
+```{r, message=FALSE, warning=F}
+player_game_statistics %>% 
+  select(game_id, player_id, faction) %>% 
+  inner_join(recruits_stats, on = c('player_id', 'game_id')) %>% 
+  group_by(faction, unit_id) %>% 
+  summarise(total_recruited = sum(number)) %>% 
+  left_join(units_lookup, on = 'unit_id') %>% 
+  filter(total_recruited > 1000) %>% 
+  group_by(faction) %>% 
+  mutate(recruited_fraction = total_recruited/sum(total_recruited)) %>% 
+  arrange(faction, recruited_fraction) %>% 
+  ungroup() %>% 
+  mutate(unit = factor(unit)) %>%
+  mutate(ordering = row_number()) %>%
+  mutate(unit = fct_reorder(unit, ordering)) %>%
+  ggplot(aes(x = unit, y = recruited_fraction, fill = faction)) +
+    geom_bar(stat = 'identity') +
+    facet_wrap(faction ~ ., nrow = 3, ncol = 2, scales = 'free_y')+
+    coord_flip() +
+    scale_y_continuous('Fraction of Recruits')+
+    scale_x_discrete('Unit')+
+    scale_fill_discrete('Faction')+
+    theme_bw()
+```
+
+
+
 ## Questions
 
 - Are the faction choices meaningful?
