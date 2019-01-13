@@ -1,3 +1,6 @@
+library(tidyverse)
+library(lubridate)
+library(forcats)
 source('tidy_data.R')
 load_wesnoth()
 
@@ -250,4 +253,59 @@ trellis <- unit_images %>%
          description_tert = cog(description_prim, desc = 'Tertiary Attack', default_active = T)) %>% 
   trelliscope(name = 'Unit Explorer', nrow = 1, ncol = 3, width = 1000)
 
+trellis
 
+## Additional visualisations
+# Visualisation Faction compositions
+
+player_game_statistics %>% 
+  select(game_id, player_id, faction) %>% 
+  inner_join(recruits_stats, on = c('player_id', 'game_id')) %>% 
+  group_by(faction, unit_id) %>% 
+  summarise(total_recruited = sum(number)) %>% 
+  left_join(units_lookup, on = 'unit_id') %>% 
+  filter(total_recruited > 1000) %>% 
+  group_by(faction) %>% 
+  mutate(recruited_fraction = total_recruited/sum(total_recruited)) %>% 
+  arrange(faction, recruited_fraction) %>% 
+  ungroup() %>% 
+  mutate(unit = factor(unit)) %>%
+  mutate(ordering = row_number()) %>%
+  mutate(unit = fct_reorder(unit, ordering)) %>%
+  ggplot(aes(x = unit, y = recruited_fraction, fill = faction)) +
+    geom_bar(stat = 'identity') +
+    facet_wrap(faction ~ ., nrow = 3, ncol = 2, scales = 'free_y')+
+    coord_flip() +
+    scale_y_continuous('Fraction of Recruits')+
+    scale_x_discrete('Unit')+
+    scale_fill_discrete('Faction')+
+    theme_bw()
+
+# Visualisation of overall gamer number
+game_info %>%
+  mutate(year = year(date), month = month(date)) %>% 
+  group_by(year, month) %>% 
+  summarise(num_games = n()) %>% 
+  mutate(year_month = as.Date(ISOdate(year, month, 1)))%>% 
+  ggplot(aes(x = year_month, y = num_games)) +
+    geom_line() +
+    scale_x_date('Year') + 
+    scale_y_continuous('Monthly Games') +
+    ggtitle('Tournament Games of Wesnoth over time')+
+    theme_bw()
+
+# Split by weekday 
+game_info %>%
+  mutate(weekday = factor(wday(date))) %>% 
+  group_by(weekday) %>% 
+  summarise(number = n()) %>% 
+  ungroup() %>% 
+  mutate(fraction = number/sum(number)) %>% 
+  ggplot(aes(x = factor(weekday), y = fraction)) +
+    geom_bar(stat = 'identity', fill = 'lightblue') +
+    theme_bw() +
+    scale_y_continuous('Fraction') +
+    scale_x_discrete('Weekday',
+                     labels = c('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'))+
+    ggtitle('Relatively little influence of day of the week')
+  
